@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- 结构模拟:Shadow DOM Web Components 表单(新一代 ATS 门户)
+     特征: 表单整体位于自定义元素的 open shadow root 内,验证引擎的 shadow 穿透采集 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>候选人信息 - 某互联网ATS门户</title>
+<style>body{font:14px/1.8 -apple-system,"Microsoft YaHei",sans-serif;padding:24px;background:#fafbfd}</style>
+</head>
+<body>
+<h2 style="font-size:16px">候选人信息</h2>
+<my-app-form></my-app-form>
+<script>
+customElements.define('my-app-form', class extends HTMLElement {
+  connectedCallback() {
+    if (this._init) return;
+    this._init = true;
+    const sh = this.attachShadow({ mode: 'open' });
+    sh.innerHTML = `
+      <style>
+        .fi { display:flex; align-items:center; margin-bottom:12px; }
+        .fi label { width:96px; text-align:right; padding-right:12px; color:#667; }
+        .fi label::before { content:"* "; color:#e5484d; }
+        .fi input { border:1px solid #d6dbe6; border-radius:6px; padding:6px 10px; width:260px; }
+      </style>
+      <div class="fi"><label>姓名</label><input id="s-name"></div>
+      <div class="fi"><label>手机号</label><input id="s-phone" maxlength="11"></div>
+      <div class="fi"><label>电子邮箱</label><input id="s-email"></div>
+      <div class="fi"><label>现居城市</label><input id="s-city"></div>`;
+  }
+});
+</script>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": [],
+  "fields": [
+    { "sel": "#s-name", "key": "name", "expect": "张三" },
+    { "sel": "#s-phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#s-email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#s-city", "key": "city", "expect": "北京" }
+  ]
+}
+</script>
+</body>
+</html>

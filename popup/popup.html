@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简历自动填写助手</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="url(#grad)"/>
+          <path d="M8 7h8l4 4v10a1 1 0 01-1 1H8a1 1 0 01-1-1V8a1 1 0 011-1z" fill="#fff" opacity="0.9"/>
+          <path d="M16 7v4h4" fill="none" stroke="#fff" stroke-width="1.2"/>
+          <line x1="10" y1="13" x2="18" y2="13" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="10" y1="15.5" x2="16" y2="15.5" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="10" y1="18" x2="17" y2="18" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="19" cy="19" r="4.5" fill="#059669"/>
+          <path d="M17 19l1.5 1.5 3-3" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient></defs>
+        </svg>
+        <div class="logo-text">
+          <h1>简历自动填写</h1>
+          <span class="version">v1.4</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnUploadResume" class="header-btn" title="上传简历解析">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3l3 3H9v4H7V7H5l3-3z"/></svg>
+        </button>
+        <button id="btnSettings" class="header-btn" title="同步与设置">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button id="btnFill" class="btn-fill">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2l4.5 1L14 3l-1 7.5L5.5 14 2 2zm4 4a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>
+        一键填写当前页面
+      </button>
+      <div class="quick-secondary">
+        <button id="btnScan" class="btn-secondary-action">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3V1h3v1H2v1H1zm14 0V1h-3v1h2v1h1zM1 13v2h3v-1H2v-1H1zm14 0v2h-3v-1h2v-1h1zM3 5v6h10V5H3zm1 1h8v4H4V6z"/></svg>
+          扫描字段
+        </button>
+        <button id="btnRecord" class="btn-secondary-action" title="记录当前网站为已投递">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 2h-11A1.5 1.5 0 001 3.5v9A1.5 1.5 0 002.5 14h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 2zM7 11L4 8l1-1 2 2 4-4 1 1-5 5z"/></svg>
+          记录投递
+        </button>
+      </div>
+    </div>
+
+    <!-- Scan Result Preview -->
+    <div id="scanResult" class="scan-result hidden">
+      <div class="scan-header">
+        <span>检测到 <strong id="scanCount">0</strong> 个可填写字段</span>
+        <button id="closeScan" class="icon-btn-sm">&times;</button>
+      </div>
+      <div id="scanList" class="scan-list"></div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="basic"><span>个人信息</span></button>
+      <button class="tab" data-tab="education"><span>教育</span></button>
+      <button class="tab" data-tab="work"><span>工作</span></button>
+      <button class="tab" data-tab="project"><span>项目</span></button>
+      <button class="tab" data-tab="other"><span>更多</span></button>
+      <button class="tab" data-tab="history"><span>记录</span></button>
+    </nav>
+
+    <!-- Form Sections -->
+    <div class="form-scroll">
+
+      <!-- BASIC INFO -->
+      <div class="tab-content active" id="tab-basic">
+        <div class="form-row">
+          <div class="form-group">
+            <label>姓名 <span class="req">*</span></label>
+            <input type="text" data-field="name" placeholder="请输入姓名">
+          </div>
+          <div class="form-group form-sm">
+            <label>性别</label>
+            <select data-field="gender">
+              <option value="">选择</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>身份证号</label>
+          <input type="text" data-field="idCard" placeholder="18位身份证号（自动推断生日/性别）" maxlength="18">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>出生日期</label>
+            <input type="date" data-field="birthday">
+          </div>
+          <div class="form-group">
+            <label>民族</label>
+            <input type="text" data-field="ethnicity" placeholder="如：汉族">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>手机号 <span class="req">*</span></label>
+            <input type="tel" data-field="phone" placeholder="11位手机号" maxlength="11">
+          </div>
+          <div class="form-group">
+            <label>邮箱 <span class="req">*</span></label>
+            <input type="email" data-field="email" placeholder="name@example.com">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>现居城市</label>
+            <input type="text" data-field="city" placeholder="如：北京市">
+          </div>
+          <div class="form-group">
+            <label>国籍</label>
+            <input type="text" data-field="nationality" placeholder="如：中国">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>籍贯</label>
+            <input type="text" data-field="hometown" placeholder="如：湖南省长沙市">
+          </div>
+          <div class="form-group">
+            <label>户口所在地</label>
+            <input type="text" data-field="hukou" placeholder="如：湖南省长沙市">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>详细地址</label>
+          <input type="text" data-field="address" placeholder="街道门牌号">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>身高(cm)</label>
+            <input type="text" data-field="height" placeholder="175">
+          </div>
+          <div class="form-group">
+            <label>体重(kg)</label>
+            <input type="text" data-field="weight" placeholder="65">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>政治面貌</label>
+            <select data-field="politicalStatus">
+              <option value="">选择</option>
+              <option value="群众">群众</option>
+              <option value="共青团员">共青团员</option>
+              <option value="中共党员">中共党员</option>
+              <option value="中共预备党员">中共预备党员</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>婚姻状况</label>
+            <select data-field="maritalStatus">
+              <option value="">选择</option>
+              <option value="未婚">未婚</option>
+              <option value="已婚">已婚</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="tab-content" id="tab-education">
+        <div id="eduList" class="entry-list"></div>
+        <button class="btn-add" id="addEdu">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+          添加教育经历
+        </button>
+      </div>
+
+      <!-- WORK -->
+      <div class="tab-content" id="tab-work">
+        <div id="workList" class="entry-list"></div>
+        <button class="btn-add" id="addWork">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+          添加工作/实习经历
+        </button>
+      </div>
+
+      <!-- PROJECT + COMPETITION -->
+      <div class="tab-content" id="tab-project">
+        <div class="section-label">项目经历</div>
+        <div id="projectList" class="entry-list"></div>
+        <button class="btn-add" id="addProject">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+          添加项目经历
+        </button>
+        <div class="section-label" style="margin-top:14px">竞赛/荣誉</div>
+        <div id="competitionList" class="entry-list"></div>
+        <button class="btn-add" id="addCompetition">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+          添加竞赛/荣誉
+        </button>
+      </div>
+
+      <!-- OTHER -->
+      <div class="tab-content" id="tab-other">
+        <div class="section-label">求职意向</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>期望职位</label>
+            <input type="text" data-field="expectedJob" placeholder="目标岗位">
+          </div>
+          <div class="form-group">
+            <label>期望薪资</label>
+            <input type="text" data-field="expectedSalary" placeholder="15k-20k">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>工作年限</label>
+            <input type="text" data-field="workYears" placeholder="如：3年">
+          </div>
+          <div class="form-group">
+            <label>期望行业</label>
+            <input type="text" data-field="industry" placeholder="互联网/IT">
+          </div>
+        </div>
+
+        <div class="section-label">技能 & 语言</div>
+        <div class="form-group">
+          <label>技能特长</label>
+          <textarea data-field="skills" rows="2" placeholder="JavaScript, Python, React..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>英语水平</label>
+            <select data-field="englishLevel">
+              <option value="">选择</option>
+              <option value="CET-4">CET-4 (四级)</option>
+              <option value="CET-6">CET-6 (六级)</option>
+              <option value="TEM-4">TEM-4 (专四)</option>
+              <option value="TEM-8">TEM-8 (专八)</option>
+              <option value="IELTS">IELTS 雅思</option>
+              <option value="TOEFL">TOEFL 托福</option>
+              <option value="熟练">熟练</option>
+              <option value="流利">流利</option>
+              <option value="母语">母语</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>英语成绩</label>
+            <input type="text" data-field="englishScore" placeholder="如：580 / 7.0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>其他语言</label>
+            <input type="text" data-field="otherLanguage" placeholder="如：日语N1">
+          </div>
+          <div class="form-group">
+            <label>计算机等级</label>
+            <input type="text" data-field="computerLevel" placeholder="如：二级C语言">
+          </div>
+        </div>
+
+        <div class="section-label">证书/资质</div>
+        <div id="certList" class="entry-list"></div>
+        <button class="btn-add" id="addCert">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+          添加证书/资质
+        </button>
+
+        <div class="section-label">自我评价</div>
+        <div class="form-group">
+          <textarea data-field="selfEvaluation" rows="3" placeholder="简要描述个人优势"></textarea>
+        </div>
+
+        <div class="section-label">联系方式</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>个人网站</label>
+            <input type="url" data-field="website" placeholder="https://">
+          </div>
+          <div class="form-group">
+            <label>微信号</label>
+            <input type="text" data-field="wechat" placeholder="微信号">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>QQ</label>
+            <input type="text" data-field="qq" placeholder="QQ号码">
+          </div>
+          <div class="form-group">
+            <label>LinkedIn</label>
+            <input type="text" data-field="linkedin" placeholder="LinkedIn">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>紧急联系人</label>
+            <input type="text" data-field="emergencyContact" placeholder="姓名">
+          </div>
+          <div class="form-group">
+            <label>紧急联系电话</label>
+            <input type="tel" data-field="emergencyPhone" placeholder="手机号">
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:14px">开放题题库 <span style="color:var(--text-3);font-weight:400">(网申自定义题自动作答)</span></div>
+        <div id="answerBankList"></div>
+        <button type="button" id="btnAddAnswer" class="btn btn-outline" style="font-size:11px;padding:4px 14px;margin-top:4px">+ 添加问答</button>
+        <p style="font-size:10px;color:var(--text-3);margin:6px 0 0;line-height:1.5">填写时自动匹配相似问题并填入你的标准答案(全程本地);长文本开放题可由 AI 起草(开关在"记录"页)。</p>
+
+        <div class="section-label" style="margin-top:14px">附件材料 <span style="color:var(--text-3);font-weight:400">(证件照/身份证/简历自动上传)</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>证件照 <span style="color:var(--text-3);font-weight:400">(一寸免冠)</span></label>
+            <input type="file" id="attPhoto" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>身份证</label>
+            <input type="file" id="attIdcard" accept="image/*">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>简历附件</label>
+          <input type="file" id="attResume" accept=".pdf,.doc,.docx">
+        </div>
+        <div id="attList"></div>
+        <p style="font-size:10px;color:var(--text-3);margin:6px 0 0;line-height:1.5">照片自动压缩为 JPG(≤200KB);遇到"一寸免冠照片/身份证/简历上传"字段时自动提交。数据仅存本地。</p>
+      </div>
+
+      <!-- APPLICATION HISTORY -->
+      <div class="tab-content" id="tab-history">
+        <div class="history-toolbar">
+          <span class="history-stats">共 <strong id="historyCount">0</strong> 条记录</span>
+          <div class="history-actions">
+            <select id="historyFilter" class="history-filter">
+              <option value="all">全部</option>
+              <option value="已投递">已投递</option>
+              <option value="待投递">待投递</option>
+              <option value="已面试">已面试</option>
+              <option value="已录用">已录用</option>
+              <option value="已拒绝">已拒绝</option>
+            </select>
+            <button id="exportHistory" class="icon-btn" title="导出CSV">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 13h12v1H2v-1zM8 2l4 4h-3v5H7V6H4l4-4z"/></svg>
+            </button>
+            <button id="addHistory" class="icon-btn" title="手动添加">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="historyTableWrap" class="history-table-wrap">
+          <table class="history-table">
+            <thead><tr><th>公司/职位</th><th>日期</th><th>状态</th><th>备注</th><th></th></tr></thead>
+            <tbody id="historyList"></tbody>
+          </table>
+        </div>
+        <div id="historyEmpty" class="history-empty">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="#CBD5E1"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h12v2H2v-2z"/></svg>
+          <p>暂无投递记录</p>
+          <p class="hint">点击"记录投递"或求职网站的投递按钮时自动记录</p>
+        </div>
+        <!-- Sync & Detection Settings -->
+        <details class="sync-settings">
+          <summary class="sync-summary">投递检测 & 同步设置</summary>
+          <div class="sync-body">
+            <div class="form-group">
+              <label>投递按钮关键词 <span style="color:var(--text-3);font-weight:400">(逗号分隔)</span></label>
+              <input type="text" id="customSubmitKeywords" placeholder="例：沟通职位,发起聊天,我要应聘">
+            </div>
+            <div style="border-top:1px solid var(--border-light);margin:10px 0;"></div>
+            <div class="form-group">
+              <label>同步方式</label>
+              <select id="syncType">
+                <option value="feishu_bitable">飞书多维表格</option>
+                <option value="wecom_sheet">企微文档表格</option>
+                <option value="feishu">飞书机器人消息</option>
+                <option value="dingtalk">钉钉机器人</option>
+                <option value="wecom">企微机器人消息</option>
+                <option value="custom">自定义Webhook</option>
+              </select>
+            </div>
+            <!-- Feishu Bitable Config -->
+            <div id="bitableConfig" class="bitable-config">
+              <div class="sync-tip">
+                <a href="https://open.feishu.cn/app" target="_blank" style="color:var(--primary)">1. 创建飞书应用</a> &rarr;
+                <a href="#" id="bitableHelp" style="color:var(--primary)">2. 配置步骤</a>
+              </div>
+              <div class="form-row" style="gap:6px">
+                <div class="form-group" style="flex:1">
+                  <label>App ID</label>
+                  <input type="text" id="feishuAppId" placeholder="cli_xxxxxxxx">
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label>App Secret</label>
+                  <input type="password" id="feishuAppSecret" placeholder="密钥">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>多维表格链接</label>
+                <input type="text" id="feishuBitableUrl" placeholder="https://xxx.feishu.cn/base/xxxxx">
+              </div>
+              <button id="bitableInit" class="btn btn-outline" style="font-size:11px;padding:4px 12px;margin-top:4px">初始化表格结构</button>
+            </div>
+            <!-- WeCom Sheet Config -->
+            <div id="wecomSheetConfig" class="hidden">
+              <div class="sync-tip">
+                <a href="https://developer.work.weixin.qq.com/" target="_blank" style="color:var(--primary)">1. 企微管理后台</a> &rarr;
+                <a href="#" id="wecomSheetHelp" style="color:var(--primary)">2. 配置步骤</a>
+              </div>
+              <div class="form-row" style="gap:6px">
+                <div class="form-group" style="flex:1">
+                  <label>Corp ID</label>
+                  <input type="text" id="wecomCorpId" placeholder="ww_xxxxxxxx">
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label>Corp Secret</label>
+                  <input type="password" id="wecomCorpSecret" placeholder="应用Secret">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>文档链接</label>
+                <input type="text" id="wecomDocUrl" placeholder="https://doc.weixin.qq.com/smartsheet/xxxxxx">
+              </div>
+              <div class="form-group">
+                <label>Sheet ID</label>
+                <input type="text" id="wecomSheetId" placeholder="初始化后自动填入">
+              </div>
+              <button id="wecomSheetInit" class="btn btn-outline" style="font-size:11px;padding:4px 12px;margin-top:4px">初始化表格</button>
+            </div>
+            <!-- Webhook Config -->
+            <div id="webhookConfig" class="hidden">
+              <div class="form-group">
+                <label>Webhook URL</label>
+                <input type="text" id="syncWebhookUrl" placeholder="粘贴机器人的 Webhook 地址">
+              </div>
+            </div>
+            <div class="form-row" style="gap:8px;align-items:center;margin-top:8px">
+              <label class="sync-toggle"><input type="checkbox" id="syncEnabled"> 启用自动同步</label>
+              <button id="syncTest" class="btn btn-outline" style="font-size:11px;padding:4px 12px">测试</button>
+            </div>
+          </div>
+        </details>
+
+        <!-- Smart Fill & Adapter Learning Settings -->
+        <details class="sync-settings" style="margin-top:8px">
+          <summary class="sync-summary">智能填写 & 适配学习</summary>
+          <div class="sync-body">
+            <div class="form-group">
+              <label class="sync-toggle"><input type="checkbox" id="smartFillToggle" checked>
+                启用 LLM 智能字段识别 <span style="color:var(--text-3);font-weight:400">(未适配站点的兜底,需配置 AI Key)</span>
+              </label>
+              <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
+                规则识别不了的字段(如央国企自建网申),会把<b>字段名称和选项</b>(不含你的个人信息)发给 AI 判断对应关系;每个表单只调用一次并本地缓存。橙色高亮 = AI 填写,请重点核对。
+              </p>
+            </div>
+            <div class="form-group" style="margin-top:8px">
+              <label class="sync-toggle"><input type="checkbox" id="aiDraftToggle">
+                AI 起草开放题答案 <span style="color:var(--text-3);font-weight:400">("为什么选择我行"等,需 AI Key)</span>
+              </label>
+              <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
+                开启后,题库没覆盖的开放题会把<b>题目文字</b>和你的<b>求职意向/技能/自我评价摘要</b>发给 AI 起草(橙色高亮,请务必核对)。
+              </p>
+            </div>
+            <div style="border-top:1px solid var(--border-light);margin:10px 0;"></div>
+            <div class="form-row" style="gap:8px;align-items:center">
+              <span style="font-size:11px;color:var(--text-2)">适配学习(修正一次,该站永久生效)</span>
+            </div>
+            <div class="form-row" style="gap:6px;margin-top:6px">
+              <button id="btnExportPack" class="btn btn-outline" style="flex:1;font-size:11px;padding:4px 0">导出适配包</button>
+              <button id="btnImportPack" class="btn btn-outline" style="flex:1;font-size:11px;padding:4px 0">导入适配包</button>
+            </div>
+            <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
+              填写后你手动修正过的字段会自动学习。适配包可分享给他人或社区,导入后直接生效。
+            </p>
+          </div>
+        </details>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <button id="btnSave" class="btn-save">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2v12h12V4.5L11.5 2H2zm2 1h5v3H4V3zm7 10H5V9h6v4z"/></svg>
+        保存
+      </button>
+      <div class="footer-utils">
+        <button id="btnImport" class="footer-link" title="导入JSON">导入</button>
+        <span class="footer-sep">&middot;</span>
+        <button id="btnExport" class="footer-link" title="导出JSON">导出</button>
+        <span class="footer-sep">&middot;</span>
+        <button id="btnClear" class="footer-link danger">清空</button>
+      </div>
+    </footer>
+
+    <div class="dev-credit">
+      <a href="https://www.dreamcodes.cn" target="_blank">码界筑梦坊</a> 出品
+      <span class="dev-url">dreamcodes.cn</span>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <input type="file" id="importFile" accept=".json" style="display:none">
+
+  <!-- Resume Upload Modal -->
+  <div id="resumeModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>智能简历解析</h2>
+        <button id="closeResumeModal" class="icon-btn-sm">&times;</button>
+      </div>
+
+      <!-- Resume Profiles -->
+      <div id="resumeProfiles" class="resume-profiles">
+        <div class="profiles-row">
+          <select id="profileSelect" class="profile-select">
+            <option value="">-- 选择已保存的简历 --</option>
+          </select>
+          <button id="btnLoadProfile" class="btn btn-outline btn-xs" title="加载选中简历">加载</button>
+          <button id="btnDeleteProfile" class="btn btn-outline btn-xs danger" title="删除选中简历">删除</button>
+        </div>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div id="resumeStep1" class="modal-step">
+        <div class="parse-mode-tabs">
+          <button class="parse-mode-tab active" data-mode="local">本地解析（免费）</button>
+          <button class="parse-mode-tab" data-mode="ai">AI 增强（更准确）</button>
+        </div>
+
+        <div id="aiSettings" class="ai-settings hidden">
+          <div class="form-row">
+            <div class="form-group" style="flex:0 0 110px">
+              <label>AI 提供商</label>
+              <select id="llmProvider">
+                <option value="deepseek">DeepSeek</option>
+                <option value="kimi">Kimi (月之暗面)</option>
+                <option value="qwen">通义千问 (阿里)</option>
+                <option value="glm">智谱 GLM</option>
+                <option value="siliconflow">硅基流动</option>
+                <option value="doubao">豆包 (字节)</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>API Key <a id="llmKeyLink" href="#" target="_blank" style="font-size:10px;margin-left:4px;font-weight:400;color:var(--primary)">获取密钥</a></label>
+              <input type="password" id="llmApiKey" placeholder="填写 API Key">
+            </div>
+          </div>
+          <div id="llmKeyHint" class="key-hint" style="font-size:10px;color:var(--text-3);margin:-4px 0 6px 0"></div>
+          <div id="customUrlGroup" class="form-group hidden">
+            <label>API 地址</label>
+            <input type="text" id="llmCustomUrl" placeholder="https://your-api.com/v1/chat/completions">
+          </div>
+          <div class="form-group">
+            <label>模型 <span style="color:var(--text-3);font-weight:400">(可选)</span></label>
+            <input type="text" id="llmModel" placeholder="">
+          </div>
+          <button id="btnTestLLM" class="btn btn-outline" style="width:100%;font-size:11px;padding:5px 0">测试 API 连接</button>
+          <div id="llmTestResult" style="font-size:11px;margin-top:4px;min-height:16px"></div>
+        </div>
+
+        <div class="step-label" style="margin-top:10px">上传简历</div>
+        <div class="upload-zone" id="uploadZone">
+          <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor" opacity="0.3"><path d="M8 2l4 4h-3v6H7V6H4l4-4zM2 13h12v1H2v-1z"/></svg>
+          <p>拖拽文件到这里，或点击选择</p>
+          <p class="hint">支持 PDF、DOCX、TXT</p>
+          <input type="file" id="resumeFile" accept=".pdf,.docx,.doc,.txt,.md" style="display:none">
+        </div>
+
+        <div class="step-label" style="margin-top:10px">或粘贴简历文本</div>
+        <textarea id="resumeText" rows="3" class="resume-textarea" placeholder="将简历内容粘贴到这里..."></textarea>
+
+        <button id="btnParseResume" class="btn btn-primary" style="width:100%;margin-top:12px;padding:9px 0">
+          开始解析
+        </button>
+      </div>
+
+      <!-- Step 2: Preview & Confirm -->
+      <div id="resumeStep2" class="modal-step hidden">
+        <div class="step-label">解析结果预览</div>
+        <div id="parsePreview" class="parse-preview"></div>
+        <div class="profile-save-row">
+          <label><input type="checkbox" id="chkSaveProfile" checked> 保存为简历档案</label>
+          <input type="text" id="profileName" class="profile-name-input" placeholder="档案名称，如：技术岗简历">
+        </div>
+        <div class="parse-actions">
+          <button id="btnParseBack" class="btn btn-outline" style="flex:1">返回</button>
+          <button id="btnParseConfirm" class="btn btn-primary" style="flex:2">确认填入</button>
+        </div>
+      </div>
+
+      <!-- Step Compare -->
+      <div id="resumeStepCompare" class="modal-step hidden">
+        <div class="step-label">解析对比 <span style="font-size:11px;color:var(--text-3);font-weight:400">基础信息已自动合并</span></div>
+        <div id="compareContent" class="compare-content"></div>
+        <div class="parse-actions">
+          <button id="btnCompareBack" class="btn btn-outline" style="flex:1">返回</button>
+          <button id="btnCompareConfirm" class="btn btn-primary" style="flex:2">确认选择</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="resumeLoading" class="modal-step hidden">
+        <div class="parse-loading">
+          <div class="spinner"></div>
+          <p>AI 正在解析简历...</p>
+          <p class="hint">通常需要 5-15 秒</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../lib/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '../lib/pdf.worker.min.js';</script>
+  <script src="resume-local-parser.js"></script>
+  <script src="resume-parser.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

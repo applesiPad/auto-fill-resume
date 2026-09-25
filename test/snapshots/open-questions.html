@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- 结构模拟:开放题/筛选题/附件上传综合场景(银行网申常见)
+     特征: 自定义筛选题(是否服从调剂)由本地题库作答;开放长文本题由 AI 起草(mock);
+           一寸免冠照片自动上传;无法识别的字段出现在反馈面板中 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>应聘登记表 - 某商业银行 2026 校园招聘</title>
+<style>
+body{font:13px/1.9 "Microsoft YaHei",sans-serif;background:#eef2f7;margin:0;padding:18px}
+.box{max-width:680px;margin:0 auto;background:#fff;border:1px solid #c9d4e4;padding:18px 22px}
+h3{font-size:14px;color:#8a1f2d;border-bottom:2px solid #8a1f2d;padding-bottom:6px}
+td{padding:6px 8px;border:1px solid #dde4ee}
+.lb{background:#f7f9fc;width:150px;text-align:right;color:#445}
+.req{color:#c00}
+input,select,textarea{border:1px solid #c2ccd9;border-radius:3px;padding:4px 6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h3>应聘者补充信息</h3>
+  <table width="100%">
+    <tr>
+      <td class="lb"><span class="req">*</span>姓名</td>
+      <td><input type="text" id="name"></td>
+    </tr>
+    <tr>
+      <td class="lb"><span class="req">*</span>是否服从工作地点调剂</td>
+      <td>
+        <select id="tdjy">
+          <option value="">--请选择--</option>
+          <option value="是">是</option>
+          <option value="否">否</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="lb" style="vertical-align:top">为什么选择我行</td>
+      <td><textarea id="why" rows="4" style="width:380px" placeholder="请简要说明您选择我行的原因"></textarea></td>
+    </tr>
+    <tr>
+      <td class="lb"><span class="req">*</span>一寸免冠照片</td>
+      <td><input type="file" id="photoFile" accept="image/jpeg,image/png"> <span style="color:#888;font-size:11px">JPG/PNG,大小不超过500KB</span></td>
+    </tr>
+    <tr>
+      <td class="lb">最喜欢的前端框架</td>
+      <td><input type="text" id="frame" placeholder="选填"></td>
+    </tr>
+  </table>
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": [],
+  "llmMock": true,
+  "answerBank": [
+    { "q": "是否服从调剂", "a": "是" },
+    { "q": "职业规划", "a": "三年内成为独当一面的前端工程师" }
+  ],
+  "attachments": [
+    { "kind": "photo", "name": "photo.jpg", "mime": "image/jpeg", "base64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwcJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPDs0NDT/wAALCAABAAEBAREA/8QAFAABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AmAA//9k=" }
+  ],
+  "fields": [
+    { "sel": "#name", "key": "name", "expect": "张三" },
+    { "sel": "#tdjy", "key": "bank", "expect": "是" },
+    { "sel": "#why", "key": "ai", "mode": "contains", "expect": "贵行" },
+    { "sel": "#photoFile", "key": "photo", "mode": "files", "expect": "photo.jpg" },
+    { "sel": "#frame", "key": "none", "expectEmpty": true },
+    { "sel": "#__rf-panel-host", "mode": "shadowContains", "expect": "最喜欢的前端框架" }
+  ]
+}
+</script>
+</body>
+</html>

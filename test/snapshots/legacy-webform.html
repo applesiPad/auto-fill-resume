@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!-- 结构模拟:央企自建 ASP.NET WebForm 网申页(非真实抓取)
+     特征: __VIEWSTATE / ctl00 无语义命名 / table 布局 label / WdatePicker / UEditor / __doPostBack -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>某央企人才招聘平台 - 简历填写</title>
+<style>body{font:13px/1.8 "SimSun",serif;background:#eef} .wrap{width:760px;margin:20px auto;background:#fff;padding:20px;border:1px solid #99b} h3{background:#dde;border-left:4px solid #336;padding:4px 8px} td{padding:4px 6px;border:1px solid #ccd} .td_label{background:#f4f6f9;width:130px;text-align:right} .req{color:#f00}</style>
+</head>
+<body>
+<form name="Form1" method="post" action="ResumeEdit.aspx" id="Form1">
+<div>
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTczMzg2Nzk0NWRkAvD76hZMufmQTp+7kLWdT9bNhOU=">
+</div>
+<script>
+// 模拟 __doPostBack(WebForm 回传机制)
+function __doPostBack(eventTarget, eventArgument) {
+  var theform = document.Form1;
+  theform.__EVENTTARGET.value = eventTarget;
+  theform.__EVENTARGUMENT.value = eventArgument;
+  // 评测环境不真正提交,仅打标记
+  window.__POSTBACK_FIRED__ = (window.__POSTBACK_FIRED__ || 0) + 1;
+}
+// 模拟 UEditor(北森/央企自建富文本,真实场景为同步隐藏 textarea)
+window.UE = {
+  getEditor: function (id) {
+    return {
+      setContent: function (html) { document.getElementById('ue-preview').innerHTML = html; window.__UE_FILLED__ = true; },
+      sync: function () { window.__UE_SYNCED__ = true; }
+    };
+  }
+};
+</script>
+
+<div class="wrap">
+  <h3>基本信息</h3>
+  <table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td class="td_label"><span class="req">*</span>姓名</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox1" type="text" id="ctl00_ContentPlaceHolder1_TextBox1" maxlength="20"></td>
+      <td class="td_label"><span class="req">*</span>性别</td>
+      <td>
+        <input id="Radio1" type="radio" name="ctl00$ContentPlaceHolder1$Gender" value="1"><label for="Radio1">男</label>
+        <input id="Radio2" type="radio" name="ctl00$ContentPlaceHolder1$Gender" value="0"><label for="Radio2">女</label>
+      </td>
+    </tr>
+    <tr>
+      <td class="td_label"><span class="req">*</span>出生日期</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox3" type="text" id="txtBirth" class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'})" readonly="readonly" style="width:120px"></td>
+      <td class="td_label"><span class="req">*</span>证件号码</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox4" type="text" id="ctl00_ContentPlaceHolder1_TextBox4" maxlength="18"></td>
+    </tr>
+    <tr>
+      <td class="td_label"><span class="req">*</span>民族</td>
+      <td>
+        <select name="ctl00$ContentPlaceHolder1$DropDownList1" id="ctl00_ContentPlaceHolder1_DropDownList1">
+          <option selected="selected" value="">--请选择--</option>
+          <option value="汉">汉</option>
+          <option value="回">回</option>
+          <option value="满">满</option>
+          <option value="壮">壮</option>
+        </select>
+      </td>
+      <td class="td_label"><span class="req">*</span>政治面貌</td>
+      <td>
+        <select name="ctl00$ContentPlaceHolder1$DropDownList2" id="ctl00_ContentPlaceHolder1_DropDownList2">
+          <option selected="selected" value="">--请选择--</option>
+          <option>群众</option>
+          <option>中共党员</option>
+          <option>共青团员</option>
+          <option>民主党派</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="td_label"><span class="req">*</span>手机号码</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox5" type="text" id="ctl00_ContentPlaceHolder1_TextBox5" maxlength="11"></td>
+      <td class="td_label"><span class="req">*</span>电子邮箱</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox6" type="text" id="ctl00_ContentPlaceHolder1_TextBox6"></td>
+    </tr>
+    <tr>
+      <td class="td_label"><span class="req">*</span>籍贯</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox7" type="text" id="ctl00_ContentPlaceHolder1_TextBox7" readonly="readonly" class="Wdate" onclick="WdatePicker({dateFmt:'yyyy'})" style="width:60px;display:none"><input name="ctl00$ContentPlaceHolder1$TextBox7b" type="text" id="txtJiguan" style="width:120px"></td>
+      <td class="td_label">验证码</td>
+      <td><input name="ctl00$ContentPlaceHolder1$txtCode" type="text" id="txtCode" maxlength="4" style="width:60px"> <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="验证码" style="vertical-align:middle"></td>
+    </tr>
+  </table>
+
+  <h3>教育背景</h3>
+  <table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td class="td_label"><span class="req">*</span>毕业院校</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox8" type="text" id="ctl00_ContentPlaceHolder1_TextBox8"></td>
+      <td class="td_label"><span class="req">*</span>学历</td>
+      <td>
+        <select name="ctl00$ContentPlaceHolder1$DropDownList3" id="ctl00_ContentPlaceHolder1_DropDownList3">
+          <option selected="selected" value="">--请选择--</option>
+          <option>博士研究生</option>
+          <option>硕士研究生</option>
+          <option>大学本科（含同等学力）</option>
+          <option>大学专科</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="td_label"><span class="req">*</span>所学专业</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox9" type="text" id="ctl00_ContentPlaceHolder1_TextBox9"></td>
+      <td class="td_label">入学时间</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox10" type="text" id="txtEduStart" class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'})" readonly="readonly" style="width:120px"></td>
+    </tr>
+    <tr>
+      <td class="td_label">毕业时间</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox11" type="text" id="txtEduEnd" class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'})" readonly="readonly" style="width:120px"></td>
+      <td class="td_label">家庭成员姓名</td>
+      <td><input name="ctl00$ContentPlaceHolder1$TextBox12" type="text" id="ctl00_ContentPlaceHolder1_TextBox12"></td>
+    </tr>
+  </table>
+
+  <h3>自我评价</h3>
+  <table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td class="td_label" style="vertical-align:top">自我评价</td>
+      <td>
+        <textarea id="txtSelf" name="ctl00$ContentPlaceHolder1$txtSelf" style="width:500px;height:120px;display:none"></textarea>
+        <div class="edui-editor" id="edui1" style="width:500px;border:1px solid #ccc">
+          <div class="edui-toolbar">B I U</div>
+          <div id="ue-preview" class="edui-body" style="height:100px;padding:6px;background:#fff"></div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <p style="text-align:center;margin-top:16px">
+    <input type="submit" name="ctl00$ContentPlaceHolder1$Button1" value="保存并下一步" onclick="javascript:__doPostBack('ctl00$ContentPlaceHolder1$Button1','');return false;" id="ctl00_ContentPlaceHolder1_Button1">
+  </p>
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["webform", "legacy-table"],
+  "fields": [
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox1", "key": "name", "expect": "张三" },
+    { "sel": "#Radio1", "key": "gender", "mode": "checked" },
+    { "sel": "#txtBirth", "key": "birthday", "expect": "2000-05-20" },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox4", "key": "idCard", "expect": "110101200005200011" },
+    { "sel": "#ctl00_ContentPlaceHolder1_DropDownList1", "key": "ethnicity", "expect": "汉" },
+    { "sel": "#ctl00_ContentPlaceHolder1_DropDownList2", "key": "politicalStatus", "expect": "中共党员" },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox5", "key": "phone", "expect": "13800138000" },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox6", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#txtJiguan", "key": "hometown", "expect": "河南" },
+    { "sel": "#txtCode", "key": "captcha", "expectEmpty": true },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox8", "key": "school", "expect": "清华大学" },
+    { "sel": "#ctl00_ContentPlaceHolder1_DropDownList3", "key": "degree", "expect": "大学本科（含同等学力）" },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox9", "key": "major", "expect": "计算机科学与技术" },
+    { "sel": "#txtEduStart", "key": "eduStartDate", "expect": "2019-09-01" },
+    { "sel": "#txtEduEnd", "key": "eduEndDate", "expect": "2023-06-30" },
+    { "sel": "#ctl00_ContentPlaceHolder1_TextBox12", "key": "familyName", "expectEmpty": true },
+    { "sel": "#ue-preview", "key": "selfEvaluation", "mode": "contains", "expect": "踏实肯干" }
+  ]
+}
+</script>
+</form>
+</body>
+</html>

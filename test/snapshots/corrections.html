@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!-- 纠错学习验证页(L4):填写 → 用户手动修正 → 清空重填 → 应使用修正后的值 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>纠错学习验证</title>
+<style>body{font:14px/1.8 "Microsoft YaHei",sans-serif;padding:24px} .row{margin-bottom:10px} label{display:inline-block;width:80px;text-align:right;margin-right:8px} input{border:1px solid #ccc;border-radius:4px;padding:5px 8px}</style>
+</head>
+<body>
+  <div class="row"><label>姓名</label><input type="text" id="c-name"></div>
+  <div class="row"><label>手机号</label><input type="text" id="c-phone" maxlength="11"></div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": [],
+  "mode": "corrections",
+  "fields": [
+    { "sel": "#c-name", "key": "name", "expect": "张三" },
+    { "sel": "#c-phone", "key": "phone", "expect": "13800138000" }
+  ],
+  "corrections": [
+    { "sel": "#c-name", "editTo": "张三丰", "expectAfterRefill": "张三丰" }
+  ]
+}
+</script>
+</body>
+</html>

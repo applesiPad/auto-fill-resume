@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- 结构模拟:行内追加重式(央企/银行自建系统常见)
+     特征: 教育经历表格初始为空,点击"新增一行"追加 tr 输入行(无弹窗、无确认,随表单提交保存) -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>报名信息维护 - 某银行社会招聘</title>
+<style>
+body{font:13px/1.8 "Microsoft YaHei",sans-serif;background:#eef1f5;margin:0;padding:18px}
+.box{max-width:860px;margin:0 auto;background:#fff;border:1px solid #d5dce6;padding:16px 20px}
+h3{font-size:14px;color:#1f3d70;border-bottom:2px solid #1f3d70;padding-bottom:6px;margin:14px 0 10px}
+td{padding:5px 8px;border:1px solid #dde3ec}
+.lb{background:#f4f7fb;width:90px;text-align:right;color:#445}
+input,select{border:1px solid #c4cdd9;border-radius:3px;padding:4px 6px;font-size:13px}
+.btn-add{background:#1f3d70;color:#fff;border:none;border-radius:3px;padding:6px 20px;cursor:pointer;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h3 class="section-title">教育经历</h3>
+  <table width="100%" id="eduTable">
+    <tbody id="eduTbody"></tbody>
+  </table>
+  <button type="button" class="btn-add" id="btnAddRow">新增一行</button>
+</div>
+
+<script>
+document.getElementById('btnAddRow').addEventListener('click', function () {
+  var tr = document.createElement('tr');
+  tr.className = 'edu-row';
+  tr.innerHTML =
+    '<td class="lb">毕业院校</td><td><input type="text" class="r-school" style="width:150px"></td>' +
+    '<td class="lb">学历</td><td><select class="r-degree"><option value="">请选择</option><option>博士</option><option>硕士</option><option>本科</option><option>大专</option><option>高中</option></select></td>' +
+    '<td class="lb">所学专业</td><td><input type="text" class="r-major" style="width:140px"></td>' +
+    '<td class="lb">入学时间</td><td><input type="text" class="r-start" style="width:100px" placeholder="2019-09"></td>' +
+    '<td class="lb">毕业时间</td><td><input type="text" class="r-end" style="width:100px"></td>';
+  document.getElementById('eduTbody').appendChild(tr);
+  tr.querySelector('.r-school').focus();
+});
+</script>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": [],
+  "fields": [
+    { "sel": "#eduTbody", "countSel": "tr.edu-row", "mode": "count", "expect": 2 },
+    { "sel": "#eduTbody tr.edu-row:nth-child(1) .r-school", "expect": "清华大学" },
+    { "sel": "#eduTbody tr.edu-row:nth-child(1) .r-degree", "expect": "本科" },
+    { "sel": "#eduTbody tr.edu-row:nth-child(1) .r-start", "expect": "2019-09-01" },
+    { "sel": "#eduTbody tr.edu-row:nth-child(2) .r-school", "expect": "北京四中" },
+    { "sel": "#eduTbody tr.edu-row:nth-child(2) .r-degree", "expect": "高中" }
+  ]
+}
+</script>
+</body>
+</html>

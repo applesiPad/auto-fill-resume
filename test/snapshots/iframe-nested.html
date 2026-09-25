@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- 结构模拟:iframe 嵌套网申页(央国企/银行常见,表单整体装在 iframe 里)
+     验证: content script 在 all_frames 注入模式下的跨 frame 填写能力 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>某银行网申系统 - 安全登录后填写</title>
+<style>body{font:13px/1.8 "Microsoft YaHei",sans-serif;background:#e8eef5;margin:0;padding:16px} .notice{max-width:700px;margin:0 auto;background:#fff;border:1px solid #c5d3e8;padding:12px 16px;border-radius:4px;color:#46628f}</style>
+</head>
+<body>
+<div class="notice">为保障数据安全,请务必在本页面内完成信息填写。表单区域:</div>
+<br>
+<iframe id="formFrame" title="信息填写区" style="width:700px;height:380px;border:1px solid #c5d3e8;display:block;margin:0 auto;background:#fff"
+  srcdoc="<!DOCTYPE html><html><head><meta charset='utf-8'><style>body{font:13px/1.9 SimSun,serif;padding:10px} td{border:1px solid #bbc;padding:5px 8px} .lb{background:#f0f3f9;text-align:right;width:110px}</style></head><body><table width='100%'><tr><td class='lb'>姓名</td><td><input type='text' id='in-name' name='rspName'></td><td class='lb'>证件号码</td><td><input type='text' id='in-idcard' name='rspIdNo' maxlength='18'></td></tr><tr><td class='lb'>移动电话</td><td><input type='text' id='in-mobile' name='rspMobile' maxlength='11'></td><td class='lb'>电子邮件</td><td><input type='text' id='in-email' name='rspEmail'></td></tr></table></body></html>">
+</iframe>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": [],
+  "fields": [
+    { "sel": "#in-name", "key": "name", "expect": "张三" },
+    { "sel": "#in-idcard", "key": "idCard", "expect": "110101200005200011" },
+    { "sel": "#in-mobile", "key": "phone", "expect": "13800138000" },
+    { "sel": "#in-email", "key": "email", "expect": "zhangsan@mail.com" }
+  ]
+}
+</script>
+</body>
+</html>

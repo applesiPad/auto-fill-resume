@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!-- 结构模拟:大易(Dayee/用友系)老 JSP 网申页(非真实抓取)
+     特征: meta generator / td_label / 懒加载下拉(聚焦后异步填充选项) / laydate 日期控件 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Dayee HR Recruitment System 5.2">
+<title>应聘者信息登记 - 某银行社会招聘</title>
+<style>body{font:12px/1.9 "Microsoft YaHei",sans-serif;background:#f5f5f5} .box{width:720px;margin:20px auto;background:#fff;padding:16px;border:1px solid #ddd} h3{font-size:14px;border-bottom:2px solid #c00;padding-bottom:4px;color:#c00} td{padding:5px 8px;border:1px solid #e5e5e5} .td_label{background:#fafafa;width:110px;text-align:right;color:#555} input,select,textarea{border:1px solid #ccc;padding:3px 5px}</style>
+</head>
+<body>
+<div class="box">
+  <h3>应聘者基本信息</h3>
+  <table width="100%">
+    <tr>
+      <td class="td_label">手机号码</td>
+      <td><input type="text" id="mobile" name="applyInfo.mobile" maxlength="11"></td>
+      <td class="td_label">电子邮箱</td>
+      <td><input type="text" id="email" name="applyInfo.email"></td>
+    </tr>
+    <tr>
+      <td class="td_label">籍贯(省)</td>
+      <td>
+        <!-- 懒加载:聚焦后 250ms 才填充选项(大易/自建系统常见) -->
+        <select id="nativePlace" name="applyInfo.nativePlace"></select>
+      </td>
+      <td class="td_label">现居住城市</td>
+      <td>
+        <select id="liveCity" name="applyInfo.liveCity">
+          <option value="">请选择</option>
+          <option value="北京市">北京市</option>
+          <option value="上海市">上海市</option>
+          <option value="广州市">广州市</option>
+          <option value="深圳市">深圳市</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="td_label">参加工作时间</td>
+      <td><input type="text" id="workStartDate" name="applyInfo.workStartDate" class="laydate-icon" readonly style="width:110px"></td>
+      <td class="td_label">户口所在地</td>
+      <td>
+        <select id="huKou" name="applyInfo.huKou">
+          <option value="">请选择</option>
+          <option value="河南省">河南省</option>
+          <option value="湖南省">湖南省</option>
+          <option value="广东省">广东省</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="td_label" style="vertical-align:top">个人简介</td>
+      <td colspan="3"><textarea id="selfIntro" name="applyInfo.selfIntro" rows="4" style="width:420px"></textarea></td>
+    </tr>
+  </table>
+</div>
+
+<script>
+// 模拟懒加载下拉:聚焦后 250ms 异步填充选项
+(function () {
+  var sel = document.getElementById('nativePlace');
+  var loaded = false;
+  function load() {
+    if (loaded) return; loaded = true;
+    setTimeout(function () {
+      ['河南省','湖南省','广东省','山东省','四川省'].forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p; o.textContent = p;
+        sel.appendChild(o);
+      });
+    }, 250);
+  }
+  sel.addEventListener('focus', load);
+  sel.addEventListener('mousedown', load);
+  sel.addEventListener('click', load);
+})();
+</script>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["dayee", "legacy-table"],
+  "fields": [
+    { "sel": "#mobile", "key": "phone", "expect": "13800138000" },
+    { "sel": "#email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#nativePlace", "key": "hometown", "expect": "河南省" },
+    { "sel": "#liveCity", "key": "city", "expect": "北京市" },
+    { "sel": "#workStartDate", "key": "workStartDate", "expect": "2022-06-01" },
+    { "sel": "#huKou", "key": "hukou", "expect": "河南省" },
+    { "sel": "#selfIntro", "key": "selfEvaluation", "mode": "contains", "expect": "踏实肯干" }
+  ]
+}
+</script>
+</body>
+</html>

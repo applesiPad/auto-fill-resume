@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- 结构模拟:国聘(iguopin)风格现代 React 网申页(非真实抓取)
+     特征: antd 组件结构 / 部分"体制内"字段(生源地、外语水平)规则引擎无法识别,
+     由 LLM 语义映射层(mock)完成 —— 验证 L2 兜底链路 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>简历填写 - 国聘</title>
+<style>
+body{font:14px/1.7 -apple-system,"Microsoft YaHei",sans-serif;background:#f5f7fa;margin:0;padding:20px}
+.card{max-width:640px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:24px 28px}
+.ant-form-item{display:flex;align-items:flex-start;margin-bottom:16px}
+.ant-form-item-label{width:110px;line-height:32px}
+.ant-form-item-label label::before{content:"* ";color:#ff4d4f}
+.ant-form-item-control{flex:1}
+.ant-input{width:100%;max-width:300px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 11px;height:30px;box-sizing:border-box}
+h3{font-size:16px;margin:4px 0 16px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h3>候选人信息</h3>
+
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>姓名</label></div>
+    <div class="ant-form-item-control"><input class="ant-input" id="gp-name"></div>
+  </div>
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>手机号码</label></div>
+    <div class="ant-form-item-control"><input class="ant-input" id="gp-phone" maxlength="11"></div>
+  </div>
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>电子邮箱</label></div>
+    <div class="ant-form-item-control"><input class="ant-input" id="gp-email"></div>
+  </div>
+
+  <!-- 以下两个字段规则引擎识别不了:交给 LLM 语义映射 -->
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>生源地</label></div>
+    <div class="ant-form-item-control"><input class="ant-input" id="gp-shengyuan" placeholder="高考时的户籍所在地"></div>
+  </div>
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>外语水平</label></div>
+    <div class="ant-form-item-control">
+      <select id="gp-english" style="height:32px;border:1px solid #d9d9d9;border-radius:4px;width:200px">
+        <option value="">请选择</option>
+        <option value="CET-4">英语四级 CET-4</option>
+        <option value="CET-6">英语六级 CET-6</option>
+        <option value="TEM-8">专业八级</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ant-form-item">
+    <div class="ant-form-item-label"><label>奖惩情况</label></div>
+    <div class="ant-form-item-control"><input class="ant-input" id="gp-jiangcheng" placeholder="无则填无,系统自定义问题"></div>
+  </div>
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["iguopin"],
+  "llmMock": true,
+  "fields": [
+    { "sel": "#gp-name", "key": "name", "expect": "张三" },
+    { "sel": "#gp-phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#gp-email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#gp-shengyuan", "key": "hometown", "expect": "河南", "via": "llm" },
+    { "sel": "#gp-english", "key": "englishLevel", "expect": "CET-6", "via": "llm" },
+    { "sel": "#gp-jiangcheng", "key": "none", "expectEmpty": true }
+  ]
+}
+</script>
+</body>
+</html>

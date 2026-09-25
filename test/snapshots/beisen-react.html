@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!-- 结构模拟:北森 iTalent 风格 React 网申页(非真实抓取)
+     特征: bx- 前缀组件 / div 表单结构 / 多条目教育经历(两个已有条目 + 添加按钮) -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>应聘申请表 - 某央企 2026 校园招聘</title>
+<style>
+body{font:13px/1.7 "Microsoft YaHei",sans-serif;background:#f0f2f5;margin:0;padding:20px}
+.bx-page{max-width:680px;margin:0 auto}
+.bx-form-section{background:#fff;border-radius:6px;padding:16px 20px;margin-bottom:14px}
+.bx-section-title{font-size:15px;font-weight:600;color:#333;padding-left:8px;border-left:3px solid #2f54eb;margin-bottom:12px}
+.bx-form-item{display:flex;align-items:center;margin-bottom:10px}
+.bx-form-label{width:100px;text-align:right;padding-right:12px;color:#666;flex-shrink:0}
+.bx-form-label::before{content:"* ";color:#f5222d}
+.bx-form-control{flex:1}
+.bx-input{width:100%;max-width:280px;border:1px solid #d9d9d9;border-radius:4px;padding:5px 8px;box-sizing:border-box}
+.bx-input:focus{border-color:#2f54eb;outline:none}
+.bx-select{width:180px;height:30px;border:1px solid #d9d9d9;border-radius:4px}
+.edu-entry-item{border:1px solid #e8e8e8;border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fafafa}
+.bx-btn-add{border:1px dashed #2f54eb;color:#2f54eb;background:#fff;border-radius:4px;padding:6px 16px;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<div class="bx-page">
+
+  <div class="bx-form-section">
+    <div class="bx-section-title section-title">基本信息</div>
+    <div class="bx-form-item">
+      <div class="bx-form-label">姓名</div>
+      <div class="bx-form-control"><input class="bx-input" id="base_name" data-field="name"></div>
+    </div>
+    <div class="bx-form-item">
+      <div class="bx-form-label">手机号</div>
+      <div class="bx-form-control"><input class="bx-input" id="base_mobile" data-field="phone" maxlength="11"></div>
+    </div>
+    <div class="bx-form-item">
+      <div class="bx-form-label">电子邮箱</div>
+      <div class="bx-form-control"><input class="bx-input" id="base_email" data-field="email"></div>
+    </div>
+    <div class="bx-form-item">
+      <div class="bx-form-label">期望职位</div>
+      <div class="bx-form-control"><input class="bx-input" id="base_expect" data-field="expectPosition"></div>
+    </div>
+  </div>
+
+  <div class="bx-form-section" id="eduSection">
+    <div class="bx-section-title section-title">教育经历</div>
+
+    <div class="edu-entry-item" id="eduItem1">
+      <div class="bx-form-item">
+        <div class="bx-form-label">学校名称</div>
+        <div class="bx-form-control"><input class="bx-input edu-school"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">专业名称</div>
+        <div class="bx-form-control"><input class="bx-input edu-major"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">学历</div>
+        <div class="bx-form-control">
+          <select class="bx-select edu-degree">
+            <option value="">请选择学历</option>
+            <option>博士</option><option>硕士</option><option>本科</option><option>大专</option>
+          </select>
+        </div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">入学时间</div>
+        <div class="bx-form-control"><input class="bx-input edu-start" placeholder="如 2019-09"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">毕业时间</div>
+        <div class="bx-form-control"><input class="bx-input edu-end" placeholder="如 2023-06"></div>
+      </div>
+    </div>
+
+    <div class="edu-entry-item" id="eduItem2">
+      <div class="bx-form-item">
+        <div class="bx-form-label">学校名称</div>
+        <div class="bx-form-control"><input class="bx-input edu-school"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">专业名称</div>
+        <div class="bx-form-control"><input class="bx-input edu-major"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">学历</div>
+        <div class="bx-form-control">
+          <select class="bx-select edu-degree">
+            <option value="">请选择学历</option>
+            <option>博士</option><option>硕士</option><option>本科</option><option>大专</option>
+          </select>
+        </div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">入学时间</div>
+        <div class="bx-form-control"><input class="bx-input edu-start"></div>
+      </div>
+      <div class="bx-form-item">
+        <div class="bx-form-label">毕业时间</div>
+        <div class="bx-form-control"><input class="bx-input edu-end"></div>
+      </div>
+    </div>
+
+    <button type="button" class="bx-btn-add">+ 添加教育经历</button>
+  </div>
+
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["beisen"],
+  "fields": [
+    { "sel": "#base_name", "key": "name", "expect": "张三" },
+    { "sel": "#base_mobile", "key": "phone", "expect": "13800138000" },
+    { "sel": "#base_email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#base_expect", "key": "expectedJob", "expect": "前端开发工程师" },
+    { "sel": "#eduItem1 .edu-school", "key": "edu1School", "expect": "清华大学" },
+    { "sel": "#eduItem1 .edu-major", "key": "edu1Major", "expect": "计算机科学与技术" },
+    { "sel": "#eduItem1 .edu-degree", "key": "edu1Degree", "expect": "本科" },
+    { "sel": "#eduItem1 .edu-start", "key": "edu1Start", "expect": "2019-09-01" },
+    { "sel": "#eduItem2 .edu-school", "key": "edu2School", "expect": "北京四中" },
+    { "sel": "#eduItem2 .edu-start", "key": "edu2Start", "expect": "2016-09-01" },
+    { "sel": "#eduItem2 .edu-degree", "key": "edu2Degree", "expectEmpty": true }
+  ]
+}
+</script>
+</body>
+</html>
