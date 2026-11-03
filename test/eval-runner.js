@@ -4,8 +4,8 @@
  * the fixture, and scores results against the embedded expected manifest.
  *
  * This file is inlined into dist/eval.html by scripts/build-eval.js.
- * Global inputs provided by the build: SNAPSHOTS, SHIM_SRC, ADAPTERS_SRC,
- * PRIMITIVES_SRC, CONTENT_SRC.
+ * Global inputs provided by the build: SNAPSHOTS, SHIM_SRC, I18N_SRC,
+ * MATCHERS_SRC, ADAPTERS_SRC, PRIMITIVES_SRC, CONTENT_SRC.
  */
 (function () {
   'use strict';
@@ -41,7 +41,7 @@
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   function injectScripts(doc) {
-    [SHIM_SRC, ADAPTERS_SRC, PRIMITIVES_SRC, CONTENT_SRC].forEach(src => {
+    [SHIM_SRC, I18N_SRC, MATCHERS_SRC, ADAPTERS_SRC, PRIMITIVES_SRC, CONTENT_SRC].forEach(src => {
       const s = doc.createElement('script');
       s.textContent = src;
       (doc.body || doc.documentElement).appendChild(s);

@@ -23,9 +23,6 @@
    *   id, name, priority (lower = checked first),
    *   match({url, doc, win}) -> bool
    *   rules: [{ selector, key, section? }]     // deterministic css → field key
-   *   labelSelectors: [...]                    // extra label containers for getIdentifiers
-   *   sectionKeywords: { education: [...], ... } // extra section keywords
-   *   multiEntry?: { ... }                     // platform-specific "add entry" selectors
    * }
    */
 
@@ -46,16 +43,6 @@
       // conservative structural rules verified against snapshot; the generic
       // matcher + LLM layer handle the long tail
     ],
-    labelSelectors: [
-      '.bx-form-label', '[class*="bx-form-label"]', '[class*="form-label"]',
-      '[class*="field-label"]', '[class*="Label__root"]',
-    ],
-    sectionKeywords: {
-      basic: ['基本信息', '个人信息'],
-      education: ['教育经历', '教育背景'],
-      work: ['工作经历', '工作/实习经历', '职业经历'],
-      project: ['项目经历', '项目经验'],
-    },
   });
 
   // ----------------------------------------------------------------
@@ -71,15 +58,6 @@
       return false;
     },
     rules: [],
-    labelSelectors: [
-      '.td_label', '.td-label', '[class*="label_td"]', 'td.tdtitle',
-      '.form-label', '[class*="itemlabel"]',
-    ],
-    sectionKeywords: {
-      education: ['教育经历', '学历信息'],
-      work: ['工作经历', '工作/实习'],
-      family: ['家庭'],
-    },
   });
 
   // ----------------------------------------------------------------
@@ -93,11 +71,6 @@
       return /iguopin\.com/i.test(url);
     },
     rules: [],
-    labelSelectors: ['[class*="label"]', '[class*="Label"]'],
-    sectionKeywords: {
-      education: ['教育经历'],
-      work: ['工作经历', '实习经历'],
-    },
   });
 
   // ----------------------------------------------------------------
@@ -120,10 +93,8 @@
       return inTable / els.length >= 0.6;
     },
     rules: [],
-    labelSelectors: ['td.label', 'td.td_label', '.tdtitle'],
     // structural label extraction is handled in content.js getIdentifiers
     // (row-cell scan) — this adapter flags the page so that path is active.
-    structuralLabels: true,
   });
 
   // ----------------------------------------------------------------
@@ -145,10 +116,104 @@
   });
 
   // ----------------------------------------------------------------
+  // Workday (外资/海外主流 ATS)
+  // 特征：name/id 全是哈希，语义全挂在 data-automation-id 上；
+  //       姓名拆成 legalNameSection_firstName / _lastName 两个框。
+  // ----------------------------------------------------------------
+  REGISTRY.push({
+    id: 'workday',
+    name: 'Workday',
+    priority: 5,
+    match({ url, doc }) {
+      if (/myworkdayjobs\.com|myworkdaysite\.com|workday\.com/i.test(url)) return true;
+      if (doc.querySelector('[data-automation-id^="legalNameSection_"], [data-automation-id="addressSection_city"]')) return true;
+      return false;
+    },
+    rules: [
+      { selector: '[data-automation-id="legalNameSection_firstName"]', key: 'firstName' },
+      { selector: '[data-automation-id="legalNameSection_lastName"]', key: 'lastName' },
+      { selector: '[data-automation-id="legalNameSection_middleName"]', key: 'middleName' },
+      { selector: '[data-automation-id="email"]', key: 'email' },
+      { selector: '[data-automation-id="phoneNumber"]', key: 'phone' },
+      { selector: '[data-automation-id="addressSection_addressLine1"]', key: 'address' },
+      { selector: '[data-automation-id="addressSection_city"]', key: 'city' },
+      { selector: '[data-automation-id="addressSection_postalCode"]', key: 'postalCode' },
+      { selector: '[data-automation-id="addressSection_countryRegion"]', key: 'country' },
+      { selector: '[data-automation-id="addressSection_region"]', key: 'province' },
+    ],
+  });
+
+  // ----------------------------------------------------------------
+  // Greenhouse (欧美科技公司主力 ATS)
+  // 特征：#first_name / #last_name 分开，name 形如 job_application[first_name]，
+  //       自定义问题 id 是 question_xxx（不该被通用规则乱填）。
+  // ----------------------------------------------------------------
+  REGISTRY.push({
+    id: 'greenhouse',
+    name: 'Greenhouse',
+    priority: 5,
+    match({ url, doc }) {
+      if (/greenhouse\.io/i.test(url)) return true;
+      if (doc.querySelector('#application_form, input[name="job_application[first_name]"]')) return true;
+      return false;
+    },
+    rules: [
+      { selector: '#first_name, #job_application_first_name', key: 'firstName' },
+      { selector: '#last_name, #job_application_last_name', key: 'lastName' },
+      { selector: '#email, #job_application_email', key: 'email' },
+      { selector: '#phone, #job_application_phone', key: 'phone' },
+      { selector: '#job_application_location', key: 'city' },
+    ],
+  });
+
+  // ----------------------------------------------------------------
+  // Lever (创业公司常用，极简表单)
+  // 特征：input[name="name"] 是整名，urls[LinkedIn] 这种数组式 name。
+  // ----------------------------------------------------------------
+  REGISTRY.push({
+    id: 'lever',
+    name: 'Lever',
+    priority: 5,
+    match({ url, doc }) {
+      if (/lever\.co/i.test(url)) return true;
+      if (doc.querySelector('form#application-form, .application-question, input[name="urls[LinkedIn]"]')) return true;
+      return false;
+    },
+    rules: [
+      { selector: 'input[name="name"]', key: 'name' },
+      { selector: 'input[name="email"]', key: 'email' },
+      { selector: 'input[name="phone"]', key: 'phone' },
+      { selector: 'input[name="org"]', key: 'company' },
+      { selector: 'input[name="urls[LinkedIn]"]', key: 'linkedin' },
+    ],
+  });
+
+  // ----------------------------------------------------------------
+  // Moka / 摩卡 (私企最常用的中文 ATS，React 组件)
+  // 特征：moka-* / FormItem 类名，字段有真实 label，通用匹配器基本够用，
+  //       适配器只负责打标 + 补 label 选择器与分区关键词。
+  // ----------------------------------------------------------------
+  REGISTRY.push({
+    id: 'moka',
+    name: 'Moka 摩卡',
+    priority: 10,
+    match({ url, doc }) {
+      if (/mokahr\.com|moka\.(com|cn)/i.test(url)) return true;
+      if (doc.querySelector('[class*="moka-"], [class*="MokaForm"], [class*="formItemLabel"], [class*="FormItemLabel"]')) return true;
+      return false;
+    },
+    rules: [
+      // Moka 字段 id 不稳定，靠 label 驱动；这里只保留少数稳定结构
+      { selector: '.moka-form-item input[name="name"]', key: 'name' },
+      { selector: '.moka-form-item input[name="phone"]', key: 'phone' },
+      { selector: '.moka-form-item input[name="email"]', key: 'email' },
+    ],
+  });
+
+  // ----------------------------------------------------------------
   // Public API
   // ----------------------------------------------------------------
   window.__RF_ADAPTERS__ = {
-    list: REGISTRY,
     /**
      * @returns {Array} matched adapters sorted by priority (can be multiple:
      *          e.g. dayee + webform + legacy-table stack)
@@ -172,12 +237,6 @@
         }
       }
       return out;
-    },
-    /** Merged extra label selectors from matched adapters */
-    mergedLabelSelectors(adapters) {
-      const set = new Set();
-      for (const ad of adapters || []) (ad.labelSelectors || []).forEach(s => set.add(s));
-      return Array.from(set);
     },
   };
 })();

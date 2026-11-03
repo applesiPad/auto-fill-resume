@@ -24,14 +24,14 @@
         </svg>
         <div class="logo-text">
           <h1>简历自动填写</h1>
-          <span class="version">v1.4</span>
+          <span class="version">v1.7.0</span>
         </div>
       </div>
       <div class="header-actions">
         <button id="btnUploadResume" class="header-btn" title="上传简历解析">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3l3 3H9v4H7V7H5l3-3z"/></svg>
         </button>
-        <button id="btnSettings" class="header-btn" title="同步与设置">
+        <button id="btnSettings" class="header-btn" title="AI 与设置">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
@@ -47,10 +47,6 @@
         <button id="btnScan" class="btn-secondary-action">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3V1h3v1H2v1H1zm14 0V1h-3v1h2v1h1zM1 13v2h3v-1H2v-1H1zm14 0v2h-3v-1h2v-1h1zM3 5v6h10V5H3zm1 1h8v4H4V6z"/></svg>
           扫描字段
-        </button>
-        <button id="btnRecord" class="btn-secondary-action" title="记录当前网站为已投递">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 2h-11A1.5 1.5 0 001 3.5v9A1.5 1.5 0 002.5 14h11a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0013.5 2zM7 11L4 8l1-1 2 2 4-4 1 1-5 5z"/></svg>
-          记录投递
         </button>
       </div>
     </div>
@@ -71,7 +67,6 @@
       <button class="tab" data-tab="work"><span>工作</span></button>
       <button class="tab" data-tab="project"><span>项目</span></button>
       <button class="tab" data-tab="other"><span>更多</span></button>
-      <button class="tab" data-tab="history"><span>记录</span></button>
     </nav>
 
     <!-- Form Sections -->
@@ -336,154 +331,28 @@
         <p style="font-size:10px;color:var(--text-3);margin:6px 0 0;line-height:1.5">照片自动压缩为 JPG(≤200KB);遇到"一寸免冠照片/身份证/简历上传"字段时自动提交。数据仅存本地。</p>
       </div>
 
-      <!-- APPLICATION HISTORY -->
-      <div class="tab-content" id="tab-history">
-        <div class="history-toolbar">
-          <span class="history-stats">共 <strong id="historyCount">0</strong> 条记录</span>
-          <div class="history-actions">
-            <select id="historyFilter" class="history-filter">
-              <option value="all">全部</option>
-              <option value="已投递">已投递</option>
-              <option value="待投递">待投递</option>
-              <option value="已面试">已面试</option>
-              <option value="已录用">已录用</option>
-              <option value="已拒绝">已拒绝</option>
-            </select>
-            <button id="exportHistory" class="icon-btn" title="导出CSV">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 13h12v1H2v-1zM8 2l4 4h-3v5H7V6H4l4-4z"/></svg>
-            </button>
-            <button id="addHistory" class="icon-btn" title="手动添加">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
-            </button>
-          </div>
-        </div>
-        <div id="historyTableWrap" class="history-table-wrap">
-          <table class="history-table">
-            <thead><tr><th>公司/职位</th><th>日期</th><th>状态</th><th>备注</th><th></th></tr></thead>
-            <tbody id="historyList"></tbody>
-          </table>
-        </div>
-        <div id="historyEmpty" class="history-empty">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="#CBD5E1"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h12v2H2v-2z"/></svg>
-          <p>暂无投递记录</p>
-          <p class="hint">点击"记录投递"或求职网站的投递按钮时自动记录</p>
-        </div>
-        <!-- Sync & Detection Settings -->
-        <details class="sync-settings">
-          <summary class="sync-summary">投递检测 & 同步设置</summary>
-          <div class="sync-body">
-            <div class="form-group">
-              <label>投递按钮关键词 <span style="color:var(--text-3);font-weight:400">(逗号分隔)</span></label>
-              <input type="text" id="customSubmitKeywords" placeholder="例：沟通职位,发起聊天,我要应聘">
-            </div>
-            <div style="border-top:1px solid var(--border-light);margin:10px 0;"></div>
-            <div class="form-group">
-              <label>同步方式</label>
-              <select id="syncType">
-                <option value="feishu_bitable">飞书多维表格</option>
-                <option value="wecom_sheet">企微文档表格</option>
-                <option value="feishu">飞书机器人消息</option>
-                <option value="dingtalk">钉钉机器人</option>
-                <option value="wecom">企微机器人消息</option>
-                <option value="custom">自定义Webhook</option>
-              </select>
-            </div>
-            <!-- Feishu Bitable Config -->
-            <div id="bitableConfig" class="bitable-config">
-              <div class="sync-tip">
-                <a href="https://open.feishu.cn/app" target="_blank" style="color:var(--primary)">1. 创建飞书应用</a> &rarr;
-                <a href="#" id="bitableHelp" style="color:var(--primary)">2. 配置步骤</a>
-              </div>
-              <div class="form-row" style="gap:6px">
-                <div class="form-group" style="flex:1">
-                  <label>App ID</label>
-                  <input type="text" id="feishuAppId" placeholder="cli_xxxxxxxx">
-                </div>
-                <div class="form-group" style="flex:1">
-                  <label>App Secret</label>
-                  <input type="password" id="feishuAppSecret" placeholder="密钥">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>多维表格链接</label>
-                <input type="text" id="feishuBitableUrl" placeholder="https://xxx.feishu.cn/base/xxxxx">
-              </div>
-              <button id="bitableInit" class="btn btn-outline" style="font-size:11px;padding:4px 12px;margin-top:4px">初始化表格结构</button>
-            </div>
-            <!-- WeCom Sheet Config -->
-            <div id="wecomSheetConfig" class="hidden">
-              <div class="sync-tip">
-                <a href="https://developer.work.weixin.qq.com/" target="_blank" style="color:var(--primary)">1. 企微管理后台</a> &rarr;
-                <a href="#" id="wecomSheetHelp" style="color:var(--primary)">2. 配置步骤</a>
-              </div>
-              <div class="form-row" style="gap:6px">
-                <div class="form-group" style="flex:1">
-                  <label>Corp ID</label>
-                  <input type="text" id="wecomCorpId" placeholder="ww_xxxxxxxx">
-                </div>
-                <div class="form-group" style="flex:1">
-                  <label>Corp Secret</label>
-                  <input type="password" id="wecomCorpSecret" placeholder="应用Secret">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>文档链接</label>
-                <input type="text" id="wecomDocUrl" placeholder="https://doc.weixin.qq.com/smartsheet/xxxxxx">
-              </div>
-              <div class="form-group">
-                <label>Sheet ID</label>
-                <input type="text" id="wecomSheetId" placeholder="初始化后自动填入">
-              </div>
-              <button id="wecomSheetInit" class="btn btn-outline" style="font-size:11px;padding:4px 12px;margin-top:4px">初始化表格</button>
-            </div>
-            <!-- Webhook Config -->
-            <div id="webhookConfig" class="hidden">
-              <div class="form-group">
-                <label>Webhook URL</label>
-                <input type="text" id="syncWebhookUrl" placeholder="粘贴机器人的 Webhook 地址">
-              </div>
-            </div>
-            <div class="form-row" style="gap:8px;align-items:center;margin-top:8px">
-              <label class="sync-toggle"><input type="checkbox" id="syncEnabled"> 启用自动同步</label>
-              <button id="syncTest" class="btn btn-outline" style="font-size:11px;padding:4px 12px">测试</button>
-            </div>
-          </div>
-        </details>
-
-        <!-- Smart Fill & Adapter Learning Settings -->
-        <details class="sync-settings" style="margin-top:8px">
-          <summary class="sync-summary">智能填写 & 适配学习</summary>
-          <div class="sync-body">
-            <div class="form-group">
-              <label class="sync-toggle"><input type="checkbox" id="smartFillToggle" checked>
-                启用 LLM 智能字段识别 <span style="color:var(--text-3);font-weight:400">(未适配站点的兜底,需配置 AI Key)</span>
-              </label>
-              <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
-                规则识别不了的字段(如央国企自建网申),会把<b>字段名称和选项</b>(不含你的个人信息)发给 AI 判断对应关系;每个表单只调用一次并本地缓存。橙色高亮 = AI 填写,请重点核对。
-              </p>
-            </div>
-            <div class="form-group" style="margin-top:8px">
-              <label class="sync-toggle"><input type="checkbox" id="aiDraftToggle">
-                AI 起草开放题答案 <span style="color:var(--text-3);font-weight:400">("为什么选择我行"等,需 AI Key)</span>
-              </label>
-              <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
-                开启后,题库没覆盖的开放题会把<b>题目文字</b>和你的<b>求职意向/技能/自我评价摘要</b>发给 AI 起草(橙色高亮,请务必核对)。
-              </p>
-            </div>
-            <div style="border-top:1px solid var(--border-light);margin:10px 0;"></div>
-            <div class="form-row" style="gap:8px;align-items:center">
-              <span style="font-size:11px;color:var(--text-2)">适配学习(修正一次,该站永久生效)</span>
-            </div>
-            <div class="form-row" style="gap:6px;margin-top:6px">
-              <button id="btnExportPack" class="btn btn-outline" style="flex:1;font-size:11px;padding:4px 0">导出适配包</button>
-              <button id="btnImportPack" class="btn btn-outline" style="flex:1;font-size:11px;padding:4px 0">导入适配包</button>
-            </div>
+      <!-- AI fill settings -->
+      <details class="fill-settings" style="margin-top:8px">
+        <summary class="fill-summary">智能填写</summary>
+        <div class="fill-body">
+          <div class="form-group">
+            <label class="fill-toggle"><input type="checkbox" id="smartFillToggle" checked>
+              启用 LLM 智能字段识别 <span style="color:var(--text-3);font-weight:400">(未适配站点的兜底,需配置 AI Key)</span>
+            </label>
             <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
-              填写后你手动修正过的字段会自动学习。适配包可分享给他人或社区,导入后直接生效。
+              规则识别不了的字段会把<b>字段名称和选项</b>(不含你的个人信息)发给 AI 判断对应关系;低置信度字段默认留空,不强行填写。橙色高亮 = AI 填写,请重点核对。
             </p>
           </div>
-        </details>
-      </div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="fill-toggle"><input type="checkbox" id="aiDraftToggle">
+              AI 起草开放题答案 <span style="color:var(--text-3);font-weight:400">("为什么选择我行"等,需 AI Key)</span>
+            </label>
+            <p style="font-size:10px;color:var(--text-3);margin:6px 0 0 0;line-height:1.5">
+              开启后,题库没覆盖的开放题会把<b>题目文字</b>和你的<b>求职意向/技能/自我评价摘要</b>发给 AI 起草(橙色高亮,请务必核对)。
+            </p>
+          </div>
+        </div>
+      </details>
 
     </div>
 

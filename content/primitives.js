@@ -255,15 +255,11 @@
     // dates
     isLegacyDatePicker,
     fillLegacyDate,
-    parseDateParts,
-    formatDate,
-    isPresentValue,
     // rich text
     isRichText,
     fillRichText,
     // legacy portal behaviors
     afterSetValue,
-    callInlineHandler,
     withSelectRetry,
     // files
     fillFileInput,

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<!-- 结构模拟:Workday 网申页(非真实抓取)
+     特征:name/id 全是哈希,语义全在 data-automation-id 上;
+           姓名拆成 legalNameSection_firstName / _lastName 两个框;
+           学历下拉是英文选项(本科 → Bachelor's Degree);
+           日期是 MM/YYYY 纯文本框 + 月份/年份双下拉 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Information - Workday</title>
+<style>
+body{font:13px/1.7 -apple-system,"Segoe UI",sans-serif;background:#f7f7f7;margin:0;padding:20px;color:#333}
+.wd-page{max-width:720px;margin:0 auto}
+.wd-section{background:#fff;border-radius:8px;padding:16px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.wd-section h2{font-size:16px;font-weight:600;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #e5e5e5}
+.wd-field{display:flex;align-items:center;margin-bottom:10px}
+.wd-field label{width:150px;flex-shrink:0;color:#555;font-size:12.5px}
+.wd-field label.req::after{content:" *";color:#b32424}
+.wd-field input,.wd-field select{flex:1;max-width:300px;border:1px solid #c4c4c4;border-radius:4px;padding:6px 8px;font-size:13px;box-sizing:border-box}
+.wd-field input:focus,.wd-field select:focus{border-color:#0875e1;outline:none}
+.edu-entry{border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:10px;background:#fafafa}
+.edu-entry .wd-field label{width:130px}
+</style>
+</head>
+<body>
+<div class="wd-page">
+
+  <div class="wd-section" id="myInfo">
+    <h2>My Information</h2>
+
+    <div class="wd-field">
+      <label class="req" for="wd-first">First Name</label>
+      <input type="text" id="wd-first" data-automation-id="legalNameSection_firstName" placeholder="First Name">
+    </div>
+    <div class="wd-field">
+      <label class="req" for="wd-last">Last Name</label>
+      <input type="text" id="wd-last" data-automation-id="legalNameSection_lastName" placeholder="Last Name">
+    </div>
+    <div class="wd-field">
+      <label class="req" for="wd-email">Email Address</label>
+      <input type="email" id="wd-email" data-automation-id="email" placeholder="Email Address">
+    </div>
+    <div class="wd-field">
+      <label for="wd-phone">Phone Number</label>
+      <input type="text" id="wd-phone" data-automation-id="phoneNumber" placeholder="Phone Number">
+    </div>
+    <div class="wd-field">
+      <label for="wd-addr1">Address Line 1</label>
+      <input type="text" id="wd-addr1" data-automation-id="addressSection_addressLine1" placeholder="Address Line 1">
+    </div>
+    <div class="wd-field">
+      <label for="wd-city">City</label>
+      <input type="text" id="wd-city" data-automation-id="addressSection_city" placeholder="City">
+    </div>
+    <div class="wd-field">
+      <label for="wd-country">Country</label>
+      <select id="wd-country" data-automation-id="addressSection_countryRegion">
+        <option value="">Select One</option>
+        <option value="China">China</option>
+        <option value="United States of America">United States of America</option>
+        <option value="United Kingdom">United Kingdom</option>
+        <option value="Singapore">Singapore</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="wd-section" id="educationSection">
+    <h2>Education</h2>
+
+    <!-- 第一条:日期用 MM/YYYY 纯文本框 -->
+    <div class="edu-entry" id="edu1">
+      <div class="wd-field">
+        <label for="edu1-school">School or University</label>
+        <input type="text" id="edu1-school" data-automation-id="education-1--school" placeholder="School or University">
+      </div>
+      <div class="wd-field">
+        <label for="edu1-degree">Degree</label>
+        <select id="edu1-degree" data-automation-id="education-1--degree">
+          <option value="">Select One</option>
+          <option>High School Diploma</option>
+          <option>Associate's Degree</option>
+          <option>Bachelor's Degree</option>
+          <option>Master's Degree</option>
+          <option>Doctorate</option>
+        </select>
+      </div>
+      <div class="wd-field">
+        <label for="edu1-major">Field of Study</label>
+        <input type="text" id="edu1-major" data-automation-id="education-1--fieldOfStudy" placeholder="Field of Study">
+      </div>
+      <div class="wd-field">
+        <label for="edu1-start">From</label>
+        <input type="text" id="edu1-start" data-automation-id="education-1--startDate" placeholder="MM/YYYY">
+      </div>
+      <div class="wd-field">
+        <label for="edu1-end">To</label>
+        <input type="text" id="edu1-end" data-automation-id="education-1--endDate" placeholder="MM/YYYY">
+      </div>
+    </div>
+
+    <!-- 第二条:日期是真月份/年份双下拉 -->
+    <div class="edu-entry" id="edu2">
+      <div class="wd-field">
+        <label for="edu2-school">School or University</label>
+        <input type="text" id="edu2-school" data-automation-id="education-2--school">
+      </div>
+      <div class="wd-field">
+        <label for="edu2-degree">Degree</label>
+        <select id="edu2-degree" data-automation-id="education-2--degree">
+          <option value="">Select One</option>
+          <option>High School Diploma</option>
+          <option>Associate's Degree</option>
+          <option>Bachelor's Degree</option>
+          <option>Master's Degree</option>
+          <option>Doctorate</option>
+        </select>
+      </div>
+      <div class="wd-field">
+        <label for="edu2-major">Field of Study</label>
+        <input type="text" id="edu2-major" data-automation-id="education-2--fieldOfStudy">
+      </div>
+      <div class="wd-field">
+        <label for="edu2-start-month">From</label>
+        <select id="edu2-start-month" class="wd-month">
+          <option value="">Month</option>
+          <option value="01">January</option><option value="02">February</option>
+          <option value="03">March</option><option value="04">April</option>
+          <option value="05">May</option><option value="06">June</option>
+          <option value="07">July</option><option value="08">August</option>
+          <option value="09">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+        <select id="edu2-start-year" class="wd-year">
+          <option value="">Year</option>
+          <option>2014</option><option>2015</option><option>2016</option><option>2017</option>
+          <option>2018</option><option>2019</option><option>2020</option><option>2021</option>
+        </select>
+      </div>
+      <div class="wd-field">
+        <label for="edu2-end-month">To</label>
+        <select id="edu2-end-month" class="wd-month">
+          <option value="">Month</option>
+          <option value="01">January</option><option value="02">February</option>
+          <option value="03">March</option><option value="04">April</option>
+          <option value="05">May</option><option value="06">June</option>
+          <option value="07">July</option><option value="08">August</option>
+          <option value="09">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+        <select id="edu2-end-year" class="wd-year">
+          <option value="">Year</option>
+          <option>2014</option><option>2015</option><option>2016</option><option>2017</option>
+          <option>2018</option><option>2019</option><option>2020</option><option>2021</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["workday"],
+  "fields": [
+    { "sel": "#wd-first", "key": "firstName", "expect": "三" },
+    { "sel": "#wd-last", "key": "lastName", "expect": "张" },
+    { "sel": "#wd-email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#wd-phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#wd-city", "key": "city", "expect": "北京" },
+    { "sel": "#wd-addr1", "key": "address", "expectEmpty": true },
+    { "sel": "#wd-country", "key": "country", "expect": "China" },
+    { "sel": "#edu1-school", "key": "edu1School", "expect": "清华大学" },
+    { "sel": "#edu1-degree", "key": "edu1Degree", "expect": "Bachelor's Degree" },
+    { "sel": "#edu1-major", "key": "edu1Major", "expect": "计算机科学与技术" },
+    { "sel": "#edu1-start", "key": "edu1Start", "expect": "09/2019" },
+    { "sel": "#edu1-end", "key": "edu1End", "expect": "06/2023" },
+    { "sel": "#edu2-school", "key": "edu2School", "expect": "北京四中" },
+    { "sel": "#edu2-degree", "key": "edu2Degree", "expect": "High School Diploma" },
+    { "sel": "#edu2-start-month", "key": "edu2StartMonth", "expect": "09" },
+    { "sel": "#edu2-start-year", "key": "edu2StartYear", "expect": "2016" }
+  ]
+}
+</script>
+</body>
+</html>

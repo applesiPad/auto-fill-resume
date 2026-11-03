@@ -1,6 +1,6 @@
 /**
  * Build the self-contained eval page: dist/eval.html
- * Inlines shim + adapters + primitives + content scripts + snapshots + runner
+ * Inlines shim + i18n + matchers + adapters + primitives + content scripts + snapshots + runner
  * so the whole regression suite runs from a single file (file:// friendly).
  *
  * Usage: node scripts/build-eval.js
@@ -12,6 +12,8 @@ const ROOT = path.join(__dirname, '..');
 const read = p => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const SHIM_SRC = read('test/eval-shim.js');
+const I18N_SRC = read('content/value-i18n.js');
+const MATCHERS_SRC = read('content/matchers.js');
 const ADAPTERS_SRC = read('content/adapters.js');
 const PRIMITIVES_SRC = read('content/primitives.js');
 const CONTENT_SRC = read('content/content.js');
@@ -77,6 +79,30 @@ const SNAP_CONFIG = [
     name: '纠错学习闭环(L4)',
     desc: '填写 → 用户手动修正 → 清空重填 → 使用修正后的值',
     url: 'https://apply.example.com/form'
+  },
+  {
+    id: 'workday-apply', file: 'workday-apply.html',
+    name: 'Workday(外资) · 拆名 + 英文下拉 + MM/YYYY',
+    desc: 'data-automation-id 承载全部语义 / First+Last 拆名 / 本科 → Bachelor\'s Degree / From-To 纯文本月年 + 月份年份双下拉 / City 不被 Address 抢走',
+    url: 'https://acme.wd1.myworkdayjobs.com/en-US/careers/job/apply'
+  },
+  {
+    id: 'greenhouse-apply', file: 'greenhouse-apply.html',
+    name: 'Greenhouse(外资) · 小写 label + 自定义问题防误填',
+    desc: 'job_application[first_name] 数组式 name / "First name" 小写 label 仍要拆名 / 公司自定义问题(为什么想来)必须留空',
+    url: 'https://boards.greenhouse.io/acmetech/jobs/4021'
+  },
+  {
+    id: 'lever-apply', file: 'lever-apply.html',
+    name: 'Lever(外资) · 整名单字段 + 别乱填 LinkedIn',
+    desc: 'input[name="name"] 是整名(不能拆) / urls[LinkedIn]、补充说明无数据时留空 / Current company 用最近一段经历兜底',
+    url: 'https://jobs.lever.co/acmetech/9a1b2c3d'
+  },
+  {
+    id: 'moka-zh', file: 'moka-zh.html',
+    name: 'Moka 摩卡(私企) · React 中文表单 + 教育两段',
+    desc: 'moka-* 组件类名 / 真实 label for / 中文下拉(政治面貌·婚姻状况·学历) / 两条教育经历的学校-专业-学历-起止时间',
+    url: 'https://app.mokahr.com/campus_apply/acme/12345'
   }
 ];
 
@@ -130,7 +156,7 @@ const TEMPLATE = `<!DOCTYPE html>
 </head>
 <body>
   <h1>简历自动填写助手 · 鲁棒性评测台</h1>
-  <div class="sub">十份央国企网申结构模拟快照 × 五层填写流水线(适配器 → 规则 → LLM 兜底 → 题库/附件 → 纠错学习)。快照为结构模拟,可随时用真实页面 DOM 替换 test/snapshots/ 下的文件。</div>
+  <div class="sub">十四份网申结构模拟快照（10 份央国企 + 4 份私企/外资）× 五层填写流水线(适配器 → 规则 → LLM 兜底 → 题库/附件 → 纠错学习)。快照为结构模拟,可随时用真实页面 DOM 替换 test/snapshots/ 下的文件。</div>
   <div class="bar">
     <button id="runBtn">开始评测</button>
     <span id="summary"></span>
@@ -139,6 +165,8 @@ const TEMPLATE = `<!DOCTYPE html>
   <div id="frames"></div>
 <script>
 const SHIM_SRC = ${js(SHIM_SRC)};
+const I18N_SRC = ${js(I18N_SRC)};
+const MATCHERS_SRC = ${js(MATCHERS_SRC)};
 const ADAPTERS_SRC = ${js(ADAPTERS_SRC)};
 const PRIMITIVES_SRC = ${js(PRIMITIVES_SRC)};
 const CONTENT_SRC = ${js(CONTENT_SRC)};

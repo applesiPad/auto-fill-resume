@@ -7,7 +7,7 @@ Chrome / Edge 浏览器插件，一键将个人简历信息智能填入求职网
 - **五层填写流水线** — 平台适配器 → 规则评分 → LLM 语义映射 → 纠错学习，层层降级（详见下方架构）
 - **央国企网申专项** — 兼容 WebForm 老系统（`ctl00$...` 无语义命名/`__doPostBack`）、table 布局 label、WdatePicker/My97/laydate 日期控件、UEditor/KindEditor 富文本、iframe 嵌套表单、懒加载下拉框
 - **LLM 智能识别（L2）** — 规则识别不了的字段（生源地/政治面貌等"体制内"长尾），把字段结构与选项（**不含个人信息**）发给 AI 做语义映射；按表单签名缓存，每个表单只调用一次
-- **纠错学习（L4）** — 填写后你手动修正过的字段会自动学习，该站点下次直接用修正值；支持导出/导入适配包分享
+- **纠错学习（L4）** — 填写后你手动修正过的字段会自动学习，该站点下次直接用修正值；站点级修正保存在本地
 - **智能识别** — 多信号加权评分，自动匹配表单字段（name/id/label/placeholder 等 15+ 信号源）
 - **多条目填写** — 教育经历、工作/实习、项目、竞赛/荣誉、证书/资质均支持多条添加
 - **点击新增才出表单？也能填** — 教育经历/实习/项目等区块初始为空、只有"新增"按钮的页面，自动点击新增揭示表单：行内追加卡片直接填写；**弹窗模式**自动完成"新增 → 弹窗填写 → 点确定落列表 → 再新增录下一条"的完整循环
@@ -74,40 +74,43 @@ git clone https://github.com/erdayi/auto-fill-resume.git
 
 ### 鲁棒性回归评测（推荐）
 
-针对央国企网申场景的十份结构模拟快照（WebForm 老系统 / 大易 JSP / 北森 React / 国聘 + LLM 兜底 / iframe 嵌套 / 弹窗式多条目 / 行内追加重式 / 开放题·筛选题·附件综合 / Shadow DOM / 纠错学习），量化"填准率"：
+针对网申场景的十四份结构模拟快照（10 份央国企 + 4 份私企/外资：WebForm 老系统 / 大易 JSP / 北森 React / 国聘 + LLM 兜底 / iframe 嵌套 / 弹窗式多条目 / 行内追加重式 / 开放题·筛选题·附件综合 / Shadow DOM / 纠错学习 / Workday / Greenhouse / Lever / Moka），量化"填准率"：
 
 ```bash
 node scripts/build-eval.js   # 生成 dist/eval.html（自包含，无需扩展环境）
 # 浏览器打开 dist/eval.html，自动运行并输出每份快照的逐字段结果
 ```
 
-当前基线：**75/75 · 100%**。快照是结构模拟（真实系统需登录无法抓取），可用真实页面 DOM 替换 `test/snapshots/*.html`，并在对应文件内嵌的 `__rf_expected` 期望清单中登记断言（支持 value/contains/checked/count/gone/files/shadowContains 模式，可注入题库与附件数据）。
+当前基线：**120/120 · 100%**（14 份快照）。快照是结构模拟（真实系统需登录无法抓取），可用真实页面 DOM 替换 `test/snapshots/*.html`，并在对应文件内嵌的 `__rf_expected` 期望清单中登记断言（支持 value/contains/checked/count/gone/files/shadowContains 模式，可注入题库与附件数据）。
 
 ## 项目结构
 
 ```
 auto-fill-resume/
 ├── manifest.json          # 插件配置 (Manifest V3)
-├── background.js          # 后台脚本 (快捷键、LLM 语义映射、投递同步)
+├── background.js          # 后台脚本 (快捷键、LLM 语义映射)
 ├── popup/
 │   ├── popup.html         # 弹窗界面
 │   ├── popup.css          # 弹窗样式
-│   ├── popup.js           # 弹窗逻辑 (数据管理、智能填写开关、适配包)
+│   ├── popup.js           # 弹窗逻辑 (数据管理、智能填写开关)
 │   ├── resume-parser.js   # AI 简历解析
 │   └── resume-local-parser.js  # 本地规则解析（免费）
 ├── content/
-│   ├── adapters.js        # L0 平台指纹与适配器（北森/大易/国聘/通用老系统）
+│   ├── adapters.js        # L0 平台指纹与适配器（北森/大易/国聘/Workday/Greenhouse/Lever/Moka）
+│   ├── matchers.js        # L1 字段匹配数据（64 个字段的关键词/精确/否定规则）
+│   ├── value-i18n.js      # 中英值等价映射 + 姓名拆分 + 月份/日期辅助
 │   ├── primitives.js      # 交互原语（WdatePicker/富文本/懒加载下拉/postback）
 │   ├── content.js         # 内容脚本 (字段识别 + 五层填写流水线)
 │   └── content.css        # 填写动画样式
 ├── scripts/
 │   ├── build.js           # 打包 zip
-│   └── build-eval.js      # 生成自包含评测页
+│   ├── build-eval.js      # 生成自包含评测页
+│   └── build-debug.js     # 生成调试页
 ├── test/
 │   ├── test-form.html     # 手测表单页
 │   ├── eval-runner.js     # 评测运行器
 │   ├── eval-shim.js       # chrome.* API 模拟层
-│   └── snapshots/         # 六类央国企网申结构快照 + 期望清单
+│   └── snapshots/         # 14 份网申结构快照（10 央国企 + 4 私企/外资）+ 期望清单
 └── icons/                 # 插件图标
 ```
 
@@ -120,7 +123,7 @@ auto-fill-resume/
 ```
 L4 纠错学习   用户修正一次 → 该站点该字段永久生效（storage 本地保存）
 L0 平台适配   URL/DOM 指纹识别北森/大易/国聘/通用表格布局/WebForm 系统 → 确定性规则
-L1 规则评分   15+ 信号源 × 60 个字段匹配器（关键词/精确/否定词）加权打分，阈值 ≥8
+L1 规则评分   15+ 信号源 × 64 个字段匹配器（关键词/精确/否定词）加权打分；总分 ≥12 且强语义信号 ≥8 才落值
 L2 LLM 映射   规则未命中的空字段 → 序列化（label/选项/分区，不含个人信息）→ AI 返回
               字段映射 + 置信度 → 白名单校验后填写；按表单签名缓存，每表单只调用一次
 ```

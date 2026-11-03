@@ -18,6 +18,7 @@
   // L0 site adapters + interaction primitives (loaded before this script)
   const ADAPTERS = window.__RF_ADAPTERS__ || null;
   const PRIM = window.__RF_PRIMITIVES__ || null;
+  const I18N = window.__RF_I18N__ || null;   // 中英值等价 / 姓名拆分
   if (PRIM) {
     PRIM.injectHelpers({ setNative: (el, v) => setNativeInputValue(el, v), triggerEvents });
   }
@@ -26,330 +27,13 @@
   // SECTION 1: FIELD MATCHERS — keyword/exact/negative rules
   // ================================================================
 
-  const AUTOCOMPLETE_MAP = {
-    'name': 'name', 'given-name': 'name', 'family-name': 'name',
-    'email': 'email', 'tel': 'phone', 'tel-national': 'phone',
-    'street-address': 'address', 'address-line1': 'address',
-    'address-level2': 'city', 'bday': 'birthday',
-    'sex': 'gender', 'organization': 'company',
-    'organization-title': 'jobTitle', 'url': 'website',
-  };
-
-  const FIELD_MATCHERS = {
-    name: {
-      kw: ['姓名','真实姓名','名字','your name','full name','real name'],
-      ex: ['name','realname','fullname','truename','applicantname','candidatename','xm','userName'],
-      neg: ['company','school','university','emergency','project','父','母','紧急','公司','学校','项目','家庭','担保','推荐','联系人'],
-      w: 10
-    },
-    gender: {
-      kw: ['性别','gender','sex'],
-      ex: ['gender','sex','xb'],
-      neg: [], w: 5
-    },
-    birthday: {
-      kw: ['出生日期','生日','出生年月','出生','birthday','birth date','date of birth'],
-      ex: ['birthday','birthdate','dob','dateofbirth','birth','csrq'],
-      neg: [], w: 5
-    },
-    idCard: {
-      kw: ['身份证','证件号','身份证号码','身份证号','证件号码','id card','id number','identity'],
-      ex: ['idcard','idnumber','identitynumber','certificateno','sfzh','idNo','cardNo','zjhm'],
-      neg: [], w: 8
-    },
-    phone: {
-      kw: ['手机','电话','联系电话','手机号','联系方式','移动电话','phone','mobile','telephone','cell'],
-      ex: ['phone','mobile','tel','telephone','cellphone','mobilephone','phonenum','phoneNo','sjhm','lxdh'],
-      neg: ['emergency','紧急','fax','传真','area','区号','country','code','prefix'], w: 8
-    },
-    phoneCode: {
-      kw: ['区号','国际区号','国家代码','手机区号','country code','area code','dial code','phone code','calling code'],
-      ex: ['phonecode','areacode','countrycode','dialcode','phoneprefix','telcode','callingcode','phoneAreaCode','mobileAreaCode'],
-      neg: ['邮编','zip','postal'], w: 6
-    },
-    email: {
-      kw: ['邮箱','电子邮箱','电子邮件','email','e-mail'],
-      ex: ['email','mail','emailaddress','userEmail','contactEmail','dzyx'],
-      neg: [], w: 8
-    },
-    city: {
-      kw: ['城市','所在城市','现居城市','工作城市','工作地点','所在地','city','location','current city'],
-      ex: ['city','location','currentcity','workcity','livecity'],
-      neg: ['birth','籍贯','hometown','职位','关键字','搜索','search','keyword','job','filter','筛选','服从','调剂','意向'], w: 4
-    },
-    address: {
-      kw: ['地址','详细地址','居住地址','通讯地址','家庭地址','住址','address','street'],
-      ex: ['address','addr','detailaddress','homeaddress','streetaddress'],
-      neg: ['email','ip','mac','url'], w: 4
-    },
-    ethnicity: {
-      kw: ['民族','ethnicity','ethnic'],
-      ex: ['ethnicity','ethnic','minzu','mz'],
-      neg: ['nationality','国籍'], w: 3
-    },
-    nationality: {
-      kw: ['国籍','nationality','citizenship'],
-      ex: ['nationality','citizenship','guoji'],
-      neg: ['民族','ethnicity'], w: 3
-    },
-    politicalStatus: {
-      kw: ['政治面貌','political'],
-      ex: ['political','politicalstatus','zzmm'],
-      neg: [], w: 3
-    },
-    maritalStatus: {
-      kw: ['婚姻','婚姻状况','marital','marriage'],
-      ex: ['marital','maritalstatus','hyzk'],
-      neg: [], w: 3
-    },
-    degree: {
-      kw: ['学历','最高学历','学位','教育程度','degree','education level','qualification'],
-      ex: ['degree','education','qualification','xueli','educationlevel','highestdegree'],
-      neg: [], w: 5
-    },
-    school: {
-      kw: ['学校','院校','毕业院校','毕业学校','就读学校','school','university','college','institution'],
-      ex: ['school','university','college','institution','schoolname','collegename'],
-      neg: [], w: 5
-    },
-    major: {
-      kw: ['专业','所学专业','major','specialty','field of study'],
-      ex: ['major','specialty','subject','profession','discipline','majorname'],
-      neg: [], w: 5
-    },
-    eduStartDate: {
-      kw: ['入学时间','入学日期','教育开始','education start'],
-      ex: ['edustartdate','enrolldate','educationstartdate','rxsj'],
-      neg: [], w: 3
-    },
-    eduEndDate: {
-      kw: ['毕业时间','毕业日期','教育结束','graduation date'],
-      ex: ['eduenddate','graduatedate','graduationdate','bysj'],
-      neg: [], w: 3
-    },
-    gpa: {
-      kw: ['gpa','绩点','成绩','平均分','grade point'],
-      ex: ['gpa','grade','score','gradepoint'],
-      neg: [], w: 3
-    },
-    company: {
-      kw: ['公司','单位','公司名称','工作单位','企业','雇主','company','employer','organization'],
-      ex: ['company','employer','organization','companyname','corp','orgname','enterprise','gzdw'],
-      neg: [], w: 5
-    },
-    jobTitle: {
-      kw: ['职位','岗位','职务','头衔','position','job title','role','designation'],
-      ex: ['jobtitle','position','title','role','positionname','designation','zw','gwmc'],
-      neg: ['expected','期望','target','意向'], w: 5
-    },
-    workStartDate: {
-      kw: ['入职时间','开始工作','参加工作','work start','employment start','开始时间'],
-      ex: ['workstartdate','jobstartdate','hiredate','employmentstart','startdate'],
-      neg: [], w: 3
-    },
-    workEndDate: {
-      kw: ['离职时间','结束工作','work end','employment end','结束时间'],
-      ex: ['workenddate','jobenddate','leavedate','employmentend','enddate'],
-      neg: [], w: 3
-    },
-    jobDescription: {
-      kw: ['工作描述','工作内容','职责','工作职责','岗位描述','job description','responsibility','duties'],
-      ex: ['jobdescription','description','responsibility','workdesc','duties','jobdesc'],
-      neg: ['self','自我','项目描述','projectdesc'], w: 4
-    },
-    expectedSalary: {
-      kw: ['期望薪资','薪资','期望薪酬','期望工资','薪资要求','salary','compensation','expected salary'],
-      ex: ['salary','expectedsalary','compensation','wage','xzqw'],
-      neg: [], w: 4
-    },
-    expectedJob: {
-      kw: ['期望职位','意向职位','求职意向','期望岗位','目标职位'],
-      ex: ['expectedjob','expectedposition','targetjob','intention','desiredposition','qzyx'],
-      neg: [], w: 4
-    },
-    workYears: {
-      kw: ['工作年限','工作经验','经验年限','work years','years of experience'],
-      ex: ['workyears','experience','yearsofexperience','expyears','gznx'],
-      neg: [], w: 4
-    },
-    industry: {
-      kw: ['行业','所在行业','industry','sector'],
-      ex: ['industry','sector','trade','hangye'],
-      neg: [], w: 3
-    },
-    skills: {
-      kw: ['技能','特长','技能特长','专业技能','技术栈','skills','expertise','proficiency'],
-      ex: ['skills','skill','expertise','speciality','proficiency','techstack','jntc'],
-      neg: [], w: 4
-    },
-    selfEvaluation: {
-      kw: ['自我评价','自我介绍','个人简介','个人描述','self evaluation','introduction','summary','about me'],
-      ex: ['selfevaluation','introduction','summary','aboutme','selfdescription','bio','profile','selfintro','zwpj'],
-      neg: [], w: 4
-    },
-    website: {
-      kw: ['个人网站','网站','github','主页','website','homepage','blog','portfolio'],
-      ex: ['website','homepage','blog','portfolio','github','personalsite','personalurl'],
-      neg: [], w: 3
-    },
-    wechat: {
-      kw: ['微信','微信号','wechat','weixin'],
-      ex: ['wechat','weixin','wechatid','wxid','wxh'],
-      neg: [], w: 3
-    },
-    qq: {
-      kw: ['qq','qq号'],
-      ex: ['qq','qqnumber','qqno'],
-      neg: [], w: 3
-    },
-    linkedin: {
-      kw: ['linkedin','领英'],
-      ex: ['linkedin','linkedinurl'],
-      neg: [], w: 3
-    },
-    emergencyContact: {
-      kw: ['紧急联系人','紧急联系','emergency contact'],
-      ex: ['emergencycontact','emergencyname'],
-      neg: [], w: 3
-    },
-    emergencyPhone: {
-      kw: ['紧急联系人电话','紧急电话','emergency phone'],
-      ex: ['emergencyphone','emergencytel'],
-      neg: [], w: 3
-    },
-    eduDescription: {
-      kw: ['在校经历','教育描述','在校活动','校内经历','education description'],
-      ex: ['edudescription','educationdesc','schoolexperience','campusexperience'],
-      neg: [], w: 3
-    },
-    // Multi-entry fields (used for section detection)
-    projectName: {
-      kw: ['项目名称','项目名','project name','project title'],
-      ex: ['projectname','projecttitle','xmmc'],
-      neg: [], w: 5
-    },
-    projectRole: {
-      kw: ['担任角色','项目角色','your role','role in project'],
-      ex: ['projectrole','role','myrole'],
-      neg: [], w: 3
-    },
-    projectDescription: {
-      kw: ['项目描述','项目内容','project description','project detail'],
-      ex: ['projectdescription','projectdesc','projectdetail','xmms'],
-      neg: [], w: 4
-    },
-    projectLink: {
-      kw: ['项目链接','项目地址','project link','project url','demo'],
-      ex: ['projectlink','projecturl','demolink','repolink'],
-      neg: [], w: 3
-    },
-    // Hometown / Hukou / Physical
-    hometown: {
-      kw: ['籍贯','家乡','出生地','生源地','生源所在地','hometown','birthplace','native place'],
-      ex: ['hometown','birthplace','nativeplace','jiguan','jg','shengyuan'],
-      neg: ['户口','现居','所在城市'], w: 3
-    },
-    hukou: {
-      kw: ['户口','户口所在地','户籍','户籍所在地','hukou','registered residence'],
-      ex: ['hukou','registeredresidence','hkszd','huji'],
-      neg: ['籍贯'], w: 3
-    },
-    height: {
-      kw: ['身高','height','stature'],
-      ex: ['height','stature','shengao','sg'],
-      neg: ['体重','weight'], w: 3
-    },
-    weight: {
-      kw: ['体重','weight'],
-      ex: ['weight','tizhong','tz'],
-      neg: ['身高','height'], w: 3
-    },
-    // Language & Computer
-    englishLevel: {
-      kw: ['英语水平','英语等级','英语能力','english level','english proficiency','cet'],
-      ex: ['englishlevel','englishproficiency','cetlevel','yyshuiping'],
-      neg: [], w: 3
-    },
-    englishScore: {
-      kw: ['英语成绩','英语分数','cet成绩','cet分数','english score','toefl','ielts'],
-      ex: ['englishscore','cetscore','toefl','ielts','yychengji'],
-      neg: [], w: 3
-    },
-    otherLanguage: {
-      kw: ['其他语言','第二语言','小语种','other language','second language'],
-      ex: ['otherlanguage','secondlanguage','qtyuyan'],
-      neg: [], w: 3
-    },
-    computerLevel: {
-      kw: ['计算机等级','计算机水平','计算机能力','computer level','ncre','计算机证书'],
-      ex: ['computerlevel','ncre','jsjdj','computergrade'],
-      neg: [], w: 3
-    },
-    // Competition / Award
-    competitionName: {
-      kw: ['竞赛名称','比赛名称','奖项名称','获奖名称','获奖项','获奖情况','奖项','competition','award name','contest','award'],
-      ex: ['competitionname','awardname','contestname','jsmc','awarditem','hjx'],
-      neg: [], w: 5
-    },
-    awardLevel: {
-      kw: ['获奖等级','奖项级别','获奖级别','award level','prize level'],
-      ex: ['awardlevel','prizelevel','hjdj'],
-      neg: [], w: 3
-    },
-    awardDate: {
-      kw: ['获奖时间','获奖日期','award date'],
-      ex: ['awarddate','prizedate','hjsj'],
-      neg: [], w: 3
-    },
-    awardIssuer: {
-      kw: ['颁发机构','颁奖机构','授奖单位','issuing organization','awarded by'],
-      ex: ['awardissuer','issuer','bfjg'],
-      neg: [], w: 3
-    },
-    awardDescription: {
-      kw: ['获奖描述','竞赛描述','奖项描述','award description'],
-      ex: ['awarddescription','competitiondesc','jsdescription'],
-      neg: [], w: 3
-    },
-    // Certificate
-    certName: {
-      kw: ['证书名称','资格证书','资质名称','certificate name','certification','license'],
-      ex: ['certname','certificatename','certification','licensename','zsmc'],
-      neg: [], w: 5
-    },
-    certDate: {
-      kw: ['取证时间','发证日期','获证时间','certificate date','issue date'],
-      ex: ['certdate','certificatedate','issuedate','fzrq'],
-      neg: [], w: 3
-    },
-    certIssuer: {
-      kw: ['发证机关','颁发单位','发证单位','certificate issuer','issuing authority'],
-      ex: ['certissuer','issuingauthority','fzjg'],
-      neg: [], w: 3
-    },
-    certNo: {
-      kw: ['证书编号','证书号','certificate number','license number'],
-      ex: ['certno','certificatenumber','licensenumber','zsbh'],
-      neg: [], w: 3
-    },
-  };
-
-  const FIELD_LABELS = {};
-  const labelMap = {
-    name:'姓名',gender:'性别',birthday:'出生日期',idCard:'身份证号',phone:'手机号',phoneCode:'区号',email:'邮箱',
-    city:'城市',address:'地址',ethnicity:'民族',nationality:'国籍',politicalStatus:'政治面貌',
-    maritalStatus:'婚姻状况',degree:'学历',school:'学校',major:'专业',eduStartDate:'入学时间',
-    eduEndDate:'毕业时间',eduDescription:'在校经历',gpa:'GPA',company:'公司',jobTitle:'职位',workStartDate:'入职时间',
-    workEndDate:'离职时间',jobDescription:'工作描述',expectedSalary:'期望薪资',expectedJob:'期望职位',
-    workYears:'工作年限',industry:'行业',skills:'技能',selfEvaluation:'自我评价',website:'网站',
-    wechat:'微信',qq:'QQ',linkedin:'LinkedIn',emergencyContact:'紧急联系人',emergencyPhone:'紧急联系电话',
-    projectName:'项目名称',projectRole:'项目角色',projectDescription:'项目描述',projectLink:'项目链接',
-    hometown:'籍贯',hukou:'户口所在地',height:'身高',weight:'体重',
-    englishLevel:'英语水平',englishScore:'英语成绩',otherLanguage:'其他语言',computerLevel:'计算机等级',
-    competitionName:'竞赛名称',awardLevel:'获奖等级',awardDate:'获奖时间',awardIssuer:'颁发机构',awardDescription:'获奖描述',
-    certName:'证书名称',certDate:'取证时间',certIssuer:'发证机关',certNo:'证书编号',
-  };
-  Object.assign(FIELD_LABELS, labelMap);
+  // ================================================================
+  // SECTION 1: FIELD MATCHERS — data lives in content/matchers.js
+  // ================================================================
+  const MATCHERS = window.__RF_MATCHERS__ || {};
+  const AUTOCOMPLETE_MAP = MATCHERS.AUTOCOMPLETE_MAP || {};
+  const FIELD_MATCHERS = MATCHERS.FIELD_MATCHERS || {};
+  const FIELD_LABELS = MATCHERS.FIELD_LABELS || {};
 
   // ================================================================
   // SECTION 2: IDENTIFIER EXTRACTION
@@ -359,17 +43,32 @@
     const ids = [];
     const add = (text, source, weight) => {
       if (text && text.length > 0 && text.length < 100)
-        ids.push({ t: text.toLowerCase().trim(), s: source, w: weight });
+        // raw 保留原始大小写：legalNameSection_firstName 这种 camelCase
+        // 只有先拆成词才匹配得到 "first name"
+        ids.push({ t: text.toLowerCase().trim(), raw: String(text).trim(), s: source, w: weight });
     };
 
     // Direct attributes
     ['name','id','placeholder','aria-label','autocomplete',
      'data-field','data-name','data-key','data-type','data-label',
-     'ng-model','v-model','formcontrolname','data-testid','data-cy'
+     'ng-model','v-model','formcontrolname','data-testid','data-cy',
+     // Workday / 现代 ATS：语义全在 data-automation-id 上，name/id 是哈希
+     'data-automation-id','data-qa','data-form-field','data-field-name','data-test'
     ].forEach(attr => {
       const v = el.getAttribute(attr);
-      if (v) add(v, 'attr', (attr === 'name' || attr === 'id') ? 3 : 2);
+      if (v) add(v, 'attr', (attr === 'name' || attr === 'id' || attr === 'data-automation-id') ? 3 : 2);
     });
+
+    // aria-labelledby → 指向元素的文本（无障碍表单的标准标注方式）
+    const labelledBy = el.getAttribute('aria-labelledby');
+    if (labelledBy) {
+      labelledBy.split(/\s+/).forEach(lid => {
+        try {
+          const n = document.getElementById(lid);
+          if (n) add(n.textContent.trim(), 'label', 3);
+        } catch (e) {}
+      });
+    }
 
     // CSS classes
     if (el.className && typeof el.className === 'string') {
@@ -472,57 +171,120 @@
   // SECTION 3: SCORING ENGINE
   // ================================================================
 
+  /** 把一个标识符拆成「带空格的词序列」和「紧凑串」两种形态 */
+  function idForms(id) {
+    const raw = id.raw || id.t || '';
+    const spaced = String(raw)
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')   // camelCase / PascalCase
+      .replace(/[_\-.\[\]{}]+/g, ' ')          // snake_case、数组下标
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    return { spaced, clean: spaced.replace(/\s+/g, '') };
+  }
+
+  const toClean = s => String(s).toLowerCase().replace(/[-_.\s]/g, '');
+
+  /**
+   * 标识符里是否出现该词/词组。
+   * 单词：按词边界（"first name" 里 name 命中，"surname" 里 name 不命中）
+   * 词组："first name" 必须整段出现（得分更高，因为更具体）
+   * 中文：中文没有空格，退回子串匹配
+   */
+  function phraseHit(forms, needle) {
+    const n = String(needle).toLowerCase().trim();
+    if (!n) return 0;
+    if (/[\u4e00-\u9fa5]/.test(n)) return forms.spaced.includes(n) || forms.clean.includes(toClean(n)) ? 1 : 0;
+    if (n.includes(' ')) return (' ' + forms.spaced + ' ').includes(' ' + n + ' ') ? 2 : 0;
+    return forms.spaced.split(' ').includes(n) ? 1 : 0;
+  }
+
   function scoreField(el, identifiers, key, m) {
     let score = 0;
+    let strongScore = 0;
 
     for (const id of identifiers) {
-      const text = id.t;
-      const clean = text.replace(/[-_.\s]/g, '');
+      const forms = idForms(id);
 
       // Negative check
-      if (m.neg.length > 0 && m.neg.some(n => text.includes(n.toLowerCase()) || clean.includes(n.toLowerCase().replace(/[-_.\s]/g, '')))) {
-        return -1;
+      if (m.neg.length > 0 && m.neg.some(n => {
+        const nn = String(n).toLowerCase();
+        return forms.spaced.includes(nn) || (toClean(nn) && forms.clean.includes(toClean(nn)));
+      })) {
+        return { score: -1, strongScore: 0 };
       }
+
+      let idScore = 0;
 
       // Exact match
       for (const e of m.ex) {
-        if (clean === e.toLowerCase()) { score += 20 * id.w; break; }
-        else if (clean.includes(e.toLowerCase()) && clean.length < e.length + 12) { score += 12 * id.w; }
+        const ec = toClean(e);
+        const hit = phraseHit(forms, e);
+        if (forms.clean === ec) { idScore += 20 * id.w; break; }
+        if (hit === 2) { idScore += 20 * id.w; break; }        // 完整词组，最具体
+        if (hit === 1) { idScore += 14 * id.w; break; }        // 单个词，按词边界
+        if (ec && forms.clean.includes(ec) && forms.clean.length < ec.length + 12) { idScore += 12 * id.w; }
       }
 
       // Keyword match
       for (const kw of m.kw) {
-        const kwl = kw.toLowerCase();
-        if (text.includes(kwl) || clean.includes(kwl.replace(/[-_.\s]/g, ''))) {
-          score += 10 * id.w;
-          break; // Only count best keyword match per identifier
+        if (phraseHit(forms, kw)) {
+          idScore += 10 * id.w;
+          break; // 每个标识符只计最高的一次关键词
         }
       }
+
+      score += idScore;
+      // 只有 label / name / id / placeholder / aria / 父级标签等强信号
+      // 才允许独立完成匹配；纯 CSS class 或 title 不足以落值。
+      if (id.w >= 2) strongScore += idScore;
     }
 
     // Autocomplete bonus
     const ac = el.getAttribute('autocomplete');
-    if (ac && AUTOCOMPLETE_MAP[ac] === key) score += 30;
+    if (ac && AUTOCOMPLETE_MAP[ac] === key) {
+      score += 30;
+      strongScore += 30;
+    }
 
     // Input type bonus
     const typeMap = { email: 'email', tel: 'phone', url: 'website' };
-    if (typeMap[el.type] === key) score += 5;
+    if (typeMap[el.type] === key) {
+      score += 5;
+      strongScore += 5;
+    }
 
-    return score;
+    return { score, strongScore };
   }
 
   function matchField(el) {
+    return matchFieldWithin(el, null);
+  }
+
+  /**
+   * 在限定的 key 集合里解析字段。
+   * 教育经历里的「开始时间」和工作经历里的「开始时间」关键词完全一样，
+   * 全局解析会平手、靠声明顺序定胜负，导致工作经历日期填不进去。
+   * 填某个多条目区块时只让该区块的 key 参与竞争，冲突自然消失。
+   */
+  function matchFieldWithin(el, allowedKeys) {
     const ids = getIdentifiers(el);
     if (ids.length === 0) return null;
 
-    let bestKey = null, bestScore = 0;
+    let bestKey = null, bestScore = 0, bestStrong = 0;
     for (const [key, m] of Object.entries(FIELD_MATCHERS)) {
-      const s = scoreField(el, ids, key, m);
-      if (s > bestScore) { bestScore = s; bestKey = key; }
+      if (allowedKeys && !allowedKeys.includes(key)) continue;
+      const r = scoreField(el, ids, key, m);
+      if (r.score > bestScore) {
+        bestScore = r.score;
+        bestStrong = r.strongScore;
+        bestKey = key;
+      }
     }
-    return bestScore >= 8 ? bestKey : null;
+    // 严格模式：总分 ≥ 12，且至少有一个强语义信号贡献 ≥ 8。
+    // 这样「没见过 / 只有 class 名」的字段默认留空，不会被硬填。
+    return (bestScore >= 12 && bestStrong >= 8) ? bestKey : null;
   }
-
   // ================================================================
   // SECTION 4: SECTION/CONTEXT DETECTOR
   // ================================================================
@@ -793,23 +555,64 @@
 
   function setSelectValue(el, value) {
     const opts = Array.from(el.options);
-    // Normalize: strip trailing 省/市/区/县/自治区 etc. for flexible matching
-    const normalize = s => s.replace(/[省市区县自治区自治州特别行政区地区盟旗]/g, '').trim();
-    const normVal = normalize(value);
+    const norm = s => (I18N ? I18N.norm(s) : String(s == null ? '' : s).toLowerCase().replace(/[\s\-_./]+/g, ''));
+    // 去掉省市县后缀，"湖南省" 可以匹配 "湖南"
+    const stripRegion = s => String(s).replace(/[省市区县自治区自治州特别行政区地区盟旗]/g, '').trim();
+    // 候选展开：本科 → 学士 / Bachelor's Degree / BSc …… 逐级尝试
+    const cands = I18N ? I18N.candidates(value) : [value];
 
-    const match = opts.find(o => o.value === value) ||
-                  opts.find(o => o.textContent.trim() === value) ||
-                  opts.find(o => o.value && value.includes(o.value) && o.value !== '') ||
-                  opts.find(o => { const t = o.textContent.trim(); return t && (value.includes(t) || t.includes(value)) && t !== ''; }) ||
-                  // Fuzzy: strip province/city suffixes for matching (e.g. "湖南省" matches "湖南")
-                  opts.find(o => { const t = normalize(o.textContent.trim()); return t && normVal && (t === normVal || normVal.includes(t) || t.includes(normVal)) && t !== ''; });
-    if (match) {
-      el.value = match.value;
+    // --- 月份下拉：值是 2019-09-01，选项是 09 / Sep / September ---
+    if (I18N) {
+      const monthOpts = I18N.isMonthSelect(el);
+      const dp = I18N.dateParts(value);
+      if (monthOpts && dp && dp.m) {
+        const wanted = I18N.monthCandidates(dp.m);
+        const hit = monthOpts.find(o => wanted.some(w => norm(w) === norm(o.textContent) || w === o.value));
+        if (hit) { el.value = hit.value; triggerEvents(el); return true; }
+      }
+      // --- 年份下拉：选项全是 4 位年份 ---
+      const realOpts = opts.filter(o => o.value !== '' || o.textContent.trim() !== '');
+      if (dp && dp.y && realOpts.length >= 4 && realOpts.every(o => /^\d{4}$/.test(o.textContent.trim()))) {
+        const hit = realOpts.find(o => o.textContent.trim() === dp.y || o.value === dp.y);
+        if (hit) { el.value = hit.value; triggerEvents(el); return true; }
+      }
+    }
+
+    for (const cand of cands) {
+      const nc = norm(cand);
+      if (!nc) continue;
+      const match =
+        opts.find(o => o.value === cand) ||
+        opts.find(o => o.textContent.trim() === cand) ||
+        opts.find(o => norm(o.textContent) === nc) ||
+        opts.find(o => o.value && norm(o.value) === nc) ||
+        // 包含式匹配只对较长候选开放：'bs' / 'm' 这类短别名会把任意选项吞掉
+        (nc.length >= 4 ? opts.find(o => {
+          const t = norm(o.textContent);
+          return t.length >= 2 && (t.includes(nc) || nc.includes(t));
+        }) : null);
+      if (match) {
+        el.value = match.value;
+        triggerEvents(el);
+        // 级联下拉：省 → 市 → 区
+        handleCascadeNext(el, value);
+        return true;
+      }
+    }
+
+    // 省/市后缀模糊
+    const raw = stripRegion(value);
+    const fuzzy = opts.find(o => {
+      const t = stripRegion(o.textContent.trim());
+      return t.length >= 2 && raw && (t === raw || raw.includes(t) || t.includes(raw));
+    });
+    if (fuzzy) {
+      el.value = fuzzy.value;
       triggerEvents(el);
-      // For cascading selects (province→city→district), trigger change and wait for next level
       handleCascadeNext(el, value);
       return true;
     }
+
     // Try custom select handler
     return handleCustomSelect(el, value);
   }
@@ -838,10 +641,39 @@
     }, 300);
   }
 
+  // 取单选框自己的文案：label[for] > 包裹的 label > 父元素文本
+  function _radioOwnLabel(r) {
+    try {
+      if (r.id) {
+        const sel = 'label[for="' + (window.CSS && CSS.escape ? CSS.escape(r.id) : r.id) + '"]';
+        const l = r.ownerDocument.querySelector(sel);
+        if (l && l.textContent.trim()) return l.textContent.trim();
+      }
+    } catch (e) { /* 忽略选择器异常 */ }
+    const wrap = r.closest('label');
+    if (wrap && wrap.textContent.trim()) return wrap.textContent.trim();
+    // 紧跟其后的 label / span（<input><label>男</label> 这种兄弟写法）
+    const sib = r.nextElementSibling;
+    if (sib && /^(LABEL|SPAN)$/.test(sib.tagName) && sib.textContent.trim()) {
+      return sib.textContent.trim();
+    }
+    return r.parentElement ? r.parentElement.textContent.trim() : '';
+  }
+
   function setRadioValue(radios, value) {
+    const norm = s => (I18N ? I18N.norm(s) : String(s == null ? '' : s).toLowerCase().trim());
+    const cands = I18N ? I18N.candidates(value) : [value];
     for (const r of radios) {
-      const label = r.parentElement ? r.parentElement.textContent.trim() : '';
-      if (r.value === value || label.includes(value) || value.includes(label) || value.includes(r.value)) {
+      const nLabel = norm(_radioOwnLabel(r)), nVal = norm(r.value);
+      const hit = cands.some(c => {
+        const nc = norm(c);
+        if (!nc) return false;
+        if (nVal === nc || nLabel === nc) return true;
+        // 中文单字（男/女/是/否）必须允许包含匹配，否则永远命中不了
+        const loose = nc.length >= 2 || /[\u4e00-\u9fa5]/.test(nc);
+        return loose && (nLabel.includes(nc) || nVal.includes(nc));
+      });
+      if (hit) {
         r.checked = true;
         r.dispatchEvent(new Event('change', { bubbles: true }));
         r.dispatchEvent(new Event('click', { bubbles: true }));
@@ -904,6 +736,55 @@
     return false;
   }
 
+  /**
+   * 外资/现代表单常用纯文本日期框，格式写在 placeholder 或 aria-label 里
+   * （"MM/YYYY"、"Start date (MM/DD/YYYY)"）。直接塞 2019-09-01 会被校验拦掉。
+   */
+  function reformatDateValue(el, value) {
+    if (!I18N || !el || el.tagName !== 'INPUT') return value;
+    if (!['text', '', 'search', 'tel'].includes(el.type)) return value;
+    const dp = I18N.dateParts(value);
+    if (!dp || !dp.m) return value;
+    // 只看真正表达格式的提示：placeholder / aria-label / title / 相邻文本
+    // 绝对不要看 data-automation-id —— education-1--endDate 里的 "endD" 含 dd
+    const hint = [el.placeholder, el.getAttribute('aria-label'), el.title,
+                  el.getAttribute('data-format'), el.getAttribute('data-date-format')]
+      .filter(Boolean).join(' ').toLowerCase();
+    if (!hint) return value;
+    // 必须真的像日期格式才动手，避免普通 placeholder 被误改
+    if (!/yyyy|年/.test(hint)) return value;
+    const hasDD = /dd/.test(hint) || /日/.test(hint);
+    if (/mm\s*\/\s*dd\s*\/\s*yyyy/.test(hint)) return `${dp.m}/${dp.d || '01'}/${dp.y}`;
+    if (/dd\s*\/\s*mm\s*\/\s*yyyy/.test(hint)) return `${dp.d || '01'}/${dp.m}/${dp.y}`;
+    if (/dd\s*-\s*mm\s*-\s*yyyy/.test(hint)) return `${dp.d || '01'}-${dp.m}-${dp.y}`;
+    if (!hasDD && /mm\s*\/\s*yyyy/.test(hint)) return `${dp.m}/${dp.y}`;
+    if (!hasDD && /mm\s*-\s*yyyy/.test(hint)) return `${dp.m}-${dp.y}`;
+    if (!hasDD && /yyyy\s*\/\s*mm/.test(hint)) return `${dp.y}/${dp.m}`;
+    if (!hasDD && /yyyy\s*-\s*mm/.test(hint)) return `${dp.y}-${dp.m}`;
+    return value;
+  }
+
+  /** 按字段 key 解析简历值（含 First/Last 拆名、省/国家兜底） */
+  function valueForKey(key, data) {
+    const direct = data[key];
+    if (direct !== undefined && direct !== null && direct !== '') return direct;
+    if (!I18N || !data) return direct;
+    switch (key) {
+      case 'firstName':
+      case 'lastName':
+      case 'middleName':
+        return I18N.namePart(data, String(key).replace('Name', ''));
+      case 'province':
+        return data.province || data.hukou || data.hometown || '';
+      case 'country':
+        return data.country || '中国';
+      case 'nationality':
+        return data.nationality || '中国';
+      default:
+        return direct;
+    }
+  }
+
   function setFieldValue(el, value) {
     if (!value) return false;
     const tag = el.tagName.toLowerCase();
@@ -950,9 +831,12 @@
       return handleCustomDatePicker(el, value);
     }
 
+    // 纯文本日期框（MM/YYYY 等）先按提示改写格式
+    const textValue = reformatDateValue(el, value);
+
     // Standard text/textarea — use setNativeInputValue for React/Vue/Angular compatibility
-    const ok = setNativeInputValue(el, value);
-    if (!ok) { el.setAttribute('value', value); } // HTML attribute fallback
+    const ok = setNativeInputValue(el, textValue);
+    if (!ok) { el.setAttribute('value', textValue); } // HTML attribute fallback
 
     // Legacy portals: fire inline onchange chains (__doPostBack) after setting
     const postback = (_activeAdapters || []).some(a => a.postback);
@@ -1136,20 +1020,68 @@
     } else {
       return 0;
     }
+    // 先把本区块内每个控件只在「本节允许的 key」里解析一次，
+    // 避免 教育/工作 的 startDate、学校/公司 这种跨区块互抢
+    const allowed = Object.values(fmap).filter(Boolean);
+    const resolved = new Map();
+    for (const el of els) resolved.set(el, matchFieldWithin(el, allowed));
+
     for (const [entryField, matcherKey] of Object.entries(fmap)) {
       if (!matcherKey || !entry[entryField]) continue;
       for (const el of els) {
-        if (matchField(el) === matcherKey) {
-          if (await setFieldValueAsync(el, entry[entryField])) {
-            highlightField(el);
-            _reportFilled(el, matcherKey, 'ok');
-            count++;
-          }
-          break;
+        if (resolved.get(el) !== matcherKey) continue;
+        if (await setFieldValueAsync(el, entry[entryField])) {
+          highlightField(el);
+          _reportFilled(el, matcherKey, 'ok');
+          _filledNow.add(el);
+          count++;
+          // 外资 ATS 常把日期拆成「月」「年」两个下拉，只填一个是废的
+          const extra = await fillSiblingDateSelects(el, entry[entryField]);
+          count += extra;
         }
+        break;
       }
     }
     return count;
+  }
+
+  /**
+   * Workday 这类站点的日期是「月」+「年」两个独立 select。
+   * 命中其中一个后，把同一个字段容器里的兄弟下拉按语义补齐（月/年/日）。
+   */
+  async function fillSiblingDateSelects(el, value) {
+    if (!I18N || el.tagName !== 'SELECT') return 0;
+    const dp = I18N.dateParts(value);
+    if (!dp) return 0;
+    const scope = el.closest(
+      '.wd-field, .moka-form-item, .ant-form-item, .el-form-item, .form-item, ' +
+      '.form-group, .field, li, tr, dd'
+    ) || el.parentElement;
+    if (!scope) return 0;
+    let n = 0;
+    for (const s of scope.querySelectorAll('select')) {
+      if (s === el || _filledNow.has(s)) continue;
+      // 占位项常见写法 <option value="">Year</option>，value 为空的一律不算真实选项
+      const all = Array.from(s.options);
+      const withVal = all.filter(o => (o.value || '').trim() !== '');
+      const opts = withVal.length ? withVal : all;
+      if (!opts.length) continue;
+      const texts = opts.map(o => I18N.norm(o.textContent));
+      const isYear = opts.length >= 3 && texts.every(t => /^\d{4}$/.test(t));
+      const isDay = !isYear && opts.length >= 28 && opts.length <= 32 &&
+                    opts.every(o => /^\d{1,2}$/.test((o.value || '').trim() || o.textContent.trim()));
+      let want = '';
+      if (isYear) want = dp.y;
+      else if (I18N.isMonthSelect(s)) want = dp.m;
+      else if (isDay) want = dp.d;
+      if (!want) continue;
+      if (await setFieldValueAsync(s, want)) {
+        highlightField(s);
+        _filledNow.add(s);
+        n++;
+      }
+    }
+    return n;
   }
 
   // ================================================================
@@ -1351,122 +1283,6 @@
   }
 
   // ================================================================
-  // SECTION 12: PAGE INFO EXTRACTION (for application history)
-  // ================================================================
-
-  function extractPageInfo() {
-    const info = { company: '', job: '' };
-
-    // Layer 1: JSON-LD structured data (most reliable)
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(script => {
-      try {
-        const ld = JSON.parse(script.textContent);
-        const items = Array.isArray(ld) ? ld : [ld];
-        for (const item of items) {
-          if (item['@type'] === 'JobPosting') {
-            if (!info.job && item.title) info.job = item.title.substring(0, 40);
-            const org = item.hiringOrganization;
-            if (!info.company && org) info.company = (typeof org === 'string' ? org : org.name || '').substring(0, 40);
-          }
-        }
-      } catch(e) {}
-    });
-    if (info.company && info.job) return info;
-
-    // Layer 2: Meta tags (Open Graph / itemprop)
-    const ogSiteName = document.querySelector('meta[property="og:site_name"]');
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    const metaCompany = document.querySelector('meta[itemprop="hiringOrganization"], meta[name="company"]');
-    const metaJob = document.querySelector('meta[itemprop="title"], meta[name="position"]');
-
-    if (metaCompany && !info.company) info.company = (metaCompany.getAttribute('content') || '').substring(0, 40);
-    if (metaJob && !info.job) info.job = (metaJob.getAttribute('content') || '').substring(0, 40);
-
-    if (ogTitle && (!info.company || !info.job)) {
-      const t = ogTitle.getAttribute('content') || '';
-      const parts = t.split(/[-–—|_]/);
-      if (parts.length >= 2) {
-        if (!info.job) info.job = parts[0].trim().substring(0, 40);
-        if (!info.company) info.company = parts[1].trim().substring(0, 40);
-      }
-    }
-    if (ogSiteName && !info.company) {
-      info.company = (ogSiteName.getAttribute('content') || '').substring(0, 40);
-    }
-
-    // Layer 3: DOM selectors
-    const companySelectors = [
-      '.company-name', '.company_name', '.employer-name', '.corp-name',
-      '[class*="company-name"]', '[class*="companyName"]',
-      '.job-company', '.com-name', '.company', '.firm-name',
-      'h2.name', '.recruiter-company',
-      '.job-sec .cname', '.com_title', '.company-title-text',
-      '.company-info .name', '.recruit-company', '.corp-info h2',
-    ];
-    const jobSelectors = [
-      '.job-name', '.job_name', '.position-name', '.job-title',
-      '[class*="job-name"]', '[class*="jobName"]', '[class*="position-name"]',
-      '.title-info h1', '.job h1', '.position h1',
-      '.job-sec .name', '.pos-title', '.position-title',
-      '.job-info .title', '.recruit-title', '.post-name',
-    ];
-
-    if (!info.company) {
-      for (const sel of companySelectors) {
-        const el = document.querySelector(sel);
-        if (el && el.textContent.trim()) {
-          info.company = el.textContent.trim().substring(0, 40);
-          break;
-        }
-      }
-    }
-    if (!info.job) {
-      for (const sel of jobSelectors) {
-        const el = document.querySelector(sel);
-        if (el && el.textContent.trim()) {
-          info.job = el.textContent.trim().substring(0, 40);
-          break;
-        }
-      }
-    }
-
-    // Layer 4: h1 fallback
-    if (!info.job) {
-      const h1 = document.querySelector('h1');
-      if (h1) info.job = h1.textContent.trim().substring(0, 40);
-    }
-
-    // Layer 5: Page title parsing
-    if (!info.company || !info.job) {
-      const title = document.title;
-      const platformPattern = /[-_|·—]?\s*(招聘|求职|官网|校招|社招|热招|急招|内推|直聘|网招|人才|careers?|jobs?|hiring|recruit).*$/gi;
-      const knownPlatforms = /[-_|·—]\s*(BOSS直聘|猎聘|智联招聘|前程无忧|拉勾|牛客|实习僧|51job|zhaopin|liepin|lagou|脉脉|看准|大街|应届生|智联|58同城)\s*$/gi;
-      const cleaned = title.replace(knownPlatforms, '').replace(platformPattern, '').trim();
-      const parts = cleaned.split(/[-–—|_]/);
-      if (parts.length >= 2) {
-        if (!info.job) info.job = parts[0].trim().substring(0, 40);
-        if (!info.company) info.company = parts[1].trim().substring(0, 40);
-      } else if (!info.company) {
-        info.company = cleaned.trim().substring(0, 40);
-      }
-    }
-
-    // Mark if extraction is uncertain (for LLM fallback)
-    info._needsLLM = !info.company || !info.job;
-    if (info._needsLLM) {
-      // Collect page text snippet for LLM to parse
-      const snippetParts = [];
-      document.querySelectorAll('h1,h2,h3,.breadcrumb,[class*="title"],[class*="info"]').forEach(el => {
-        const t = el.textContent.trim();
-        if (t.length > 2 && t.length < 100) snippetParts.push(t);
-      });
-      info._pageSnippet = snippetParts.slice(0, 15).join('\n');
-    }
-
-    return info;
-  }
-
-  // ================================================================
   // MESSAGE LISTENER
   // ================================================================
 
@@ -1477,8 +1293,6 @@
           const count = await fillFormAsync(msg.data);
           // Start auto-fill for subsequent steps
           startAutoFill(msg.data);
-          // Save snapshot after fill
-          saveFormSnapshot();
           sendResponse({ success: count > 0, filledCount: count });
         } catch (err) {
           console.error('[Resume Filler]', err);
@@ -1495,21 +1309,8 @@
       }
       return true;
     }
-    if (msg.action === 'extractPageInfo') {
-      try {
-        sendResponse({ success: true, info: extractPageInfo() });
-      } catch (err) {
-        sendResponse({ success: false, info: {} });
-      }
-      return true;
-    }
     if (msg.action === 'stopAutoFill') {
       stopAutoFill();
-      sendResponse({ success: true });
-      return true;
-    }
-    if (msg.action === 'clearSiteData') {
-      api.storage.local.remove(getSiteKey());
       sendResponse({ success: true });
       return true;
     }
@@ -1762,6 +1563,8 @@
       const el = cands[m.i];
       const key = m.key;
       if (!el || !key || !FIELD_LABELS[key]) continue; // closed-set whitelist
+      const conf = typeof m.conf === 'number' ? m.conf : 0.7;
+      if (conf < 0.7) continue; // 低置信度只进报告，不落值
       if (usedKeys.has(key)) continue;
       const value = data[key];
       if (!value) continue;
@@ -1769,7 +1572,7 @@
       if (ok) {
         usedKeys.add(key);
         filledEls.add(el);
-        const tier = (typeof m.conf === 'number' && m.conf >= 0.8) ? 'ok' : 'llm';
+        const tier = conf >= 0.8 ? 'ok' : 'llm';
         highlightField(el, tier);
         _reportFilled(el, key, tier);
         if (_correctionRecords) _correctionRecords.set(el, { key, value: readbackValue(el) });
@@ -1933,6 +1736,21 @@
   // these stay eligible for the answer bank / LLM / panel paths
   let _failedEls = new Set();
 
+  // 本轮多条目填写已经写过的控件：后续板块的兜底逻辑不得覆盖
+  const _filledNow = new Set();
+
+  // 公司自定义问题（Greenhouse 的 question_8801、Lever 的 comments 这类）
+  function _isCustomQuestionEl(el) {
+    const sig = [
+      el.id, el.name, el.getAttribute('data-qa'), el.getAttribute('data-automation-id'),
+      el.getAttribute('placeholder'), el.className,
+    ].filter(Boolean).join(' ');
+    if (/question[_-]?\d|answers_attributes|custom[_-]?(field|question)|additional[_-]?info/i.test(sig)) return true;
+    const labelEl = el.labels && el.labels[0];
+    const labelText = labelEl ? labelEl.textContent : '';
+    return /why do you|tell us|anything else|additional information|cover letter|其他补充|补充说明/i.test(labelText);
+  }
+
   function _reportFilled(el, key, tier) {
     if (_fillReport) _fillReport.filled.push({ el, key, tier });
   }
@@ -2063,6 +1881,7 @@
     _correctionRecords = new Map();
     _fillReport = { filled: [], unmatched: [], data: null };
     _failedEls = new Set();
+    _filledNow.clear();
 
     // L0: detect site adapters (stackable: e.g. dayee + webform + legacy-table)
     const pageUrl = document.__RF_URL_OVERRIDE__ || location.href;
@@ -2106,8 +1925,6 @@
       });
 
     // DEBUG: log all detected elements and their matches
-    console.log('[Resume Filler DEBUG] elements count:', sortedEls.length, '| adapters:', _activeAdapters.map(a => a.id).join(','));
-    console.log('[Resume Filler DEBUG] data keys:', Object.keys(data).filter(k => data[k]));
 
     // Fill basic flat fields
     for (const el of sortedEls) {
@@ -2136,7 +1953,7 @@
       }
 
       // user-corrected value overrides profile value for this exact field
-      const value = (corr && key === corr.key && corr.value) ? corr.value : data[key];
+      const value = (corr && key === corr.key && corr.value) ? corr.value : valueForKey(key, data);
       if (!value) continue;
 
       // When filling phone, also try to fill nearby area code selector
@@ -2252,11 +2069,17 @@
           for (const [entryField, matcherKey] of Object.entries(fmap)) {
             if (!matcherKey || !entry[entryField]) continue;
             for (const el of allEls) {
-              const key = matchField(el);
-              if (key === matcherKey) {
-                if (await setFieldValueAsync(el, entry[entryField])) { highlightField(el); count++; }
-                break;
+              // 归属判定必须用「全局」解析：只用本节 key 的话，
+              // 「参加工作时间」在纯教育 key 集合里会被认成入学时间
+              if (matchField(el) !== matcherKey) continue;
+              // 已经被别的板块填过的控件绝不覆盖（否则工作的日期会盖掉教育经历）
+              if (_filledNow.has(el)) continue;
+              // 公司自定义问题（question_xxx / answers_attributes）一律不填
+              if (_isCustomQuestionEl(el)) continue;
+              if (await setFieldValueAsync(el, entry[entryField])) {
+                highlightField(el); _filledNow.add(el); count++;
               }
+              break;
             }
           }
           continue;
@@ -2264,14 +2087,21 @@
 
         if (!container) continue;
 
+        const cKeys = Object.values(fmap).filter(Boolean);
+        const cResolved = new Map();
+        for (const el of container) cResolved.set(el, matchFieldWithin(el, cKeys));
+
         for (const [entryField, matcherKey] of Object.entries(fmap)) {
           if (!matcherKey || !entry[entryField]) continue;
           for (const el of container) {
-            const key = matchField(el);
-            if (key === matcherKey) {
-              if (await setFieldValueAsync(el, entry[entryField])) { highlightField(el); count++; }
-              break;
+            if (cResolved.get(el) !== matcherKey) continue;
+            if (await setFieldValueAsync(el, entry[entryField])) {
+              highlightField(el);
+              _filledNow.add(el);
+              count++;
+              count += await fillSiblingDateSelects(el, entry[entryField]);
             }
+            break;
           }
         }
       }
@@ -2315,7 +2145,6 @@
         const count = await fillFormAsync(_autoFillData);
         if (count > 0) {
           showBadge(count, '自动填写');
-          saveFormSnapshot();
           _autoFillCooldown = Date.now() + 3000; // cooldown after each auto-fill
         }
       }, 1500);
@@ -2343,232 +2172,15 @@
   }
 
   // ================================================================
-  // SECTION 13: FORM DATA PERSISTENCE PER SITE
-  // ================================================================
-
-  function getSiteKey() {
-    // Use origin + pathname (without query/hash) as key
-    return `formData_${location.origin}${location.pathname}`;
-  }
-
-  function saveFormSnapshot() {
-    try {
-      const els = getAllFormElements();
-      const snapshot = {};
-      els.forEach((el, i) => {
-        const id = el.id || el.name || `__idx_${i}_${el.type || el.tagName}`;
-        if (el.tagName === 'SELECT') {
-          snapshot[id] = el.value;
-        } else if (el.type === 'checkbox' || el.type === 'radio') {
-          if (el.checked) snapshot[id] = el.value || 'on';
-        } else if (el.contentEditable === 'true') {
-          snapshot[id] = el.innerHTML;
-        } else {
-          snapshot[id] = el.value;
-        }
-      });
-      const key = getSiteKey();
-      api.storage.local.set({ [key]: { data: snapshot, time: Date.now() } });
-    } catch (e) { /* ignore */ }
-  }
-
-  function restoreFormSnapshot() {
-    const key = getSiteKey();
-    api.storage.local.get(key, (result) => {
-      const saved = result[key];
-      if (!saved || !saved.data) return;
-      // Expire after 7 days
-      if (Date.now() - saved.time > 7 * 24 * 3600 * 1000) {
-        api.storage.local.remove(key);
-        return;
-      }
-      const els = getAllFormElements();
-      let restored = 0;
-      els.forEach((el, i) => {
-        const id = el.id || el.name || `__idx_${i}_${el.type || el.tagName}`;
-        const val = saved.data[id];
-        if (val === undefined || val === '') return;
-        if (el.type === 'checkbox' || el.type === 'radio') {
-          if (el.value === val || val === 'on') { el.checked = true; restored++; }
-        } else if (el.contentEditable === 'true') {
-          if (!el.innerHTML.trim()) { el.innerHTML = val; restored++; }
-        } else if (el.tagName === 'SELECT') {
-          el.value = val; restored++;
-        } else {
-          if (!el.value.trim()) {
-            setFieldValue(el, val);
-            restored++;
-          }
-        }
-      });
-      if (restored > 0) showBadge(restored, '已恢复');
-    });
-  }
-
-  // Save form data periodically when user is interacting
-  let _saveDebounce = null;
-  document.addEventListener('input', () => {
-    clearTimeout(_saveDebounce);
-    _saveDebounce = setTimeout(saveFormSnapshot, 2000);
-  }, true);
-
-  // On page load, try to restore saved form data
-  if (document.readyState === 'complete') {
-    setTimeout(restoreFormSnapshot, 500);
-  } else {
-    window.addEventListener('load', () => setTimeout(restoreFormSnapshot, 500));
-  }
-
-  // ================================================================
-  // SECTION 14: AUTO-DETECT SUBMISSION
-  // ================================================================
-
-  const DEFAULT_SUBMIT_KEYWORDS = [
-    '投递', '立即投递', '申请职位', '投简历', '申请', '提交申请', '一键投递',
-    '立即申请', '我要投递', '确认投递', '投递简历', '确定投递', '马上投递',
-    '投递岗位', '确认申请', '提交简历', '发送简历', '我感兴趣', '立即沟通',
-    '打招呼', '极速投递', '投个简历', '简历投递', '快速申请',
-    '预览并提交', '提交', '确认提交', '保存并提交', '立即提交',
-    '提交申请表', '确认并提交', '投递该职位', '申请该职位',
-    'submit', 'apply', 'apply now', 'submit application', 'quick apply',
-  ];
-
-  let _submitKeywords = [...DEFAULT_SUBMIT_KEYWORDS];
-
-  // Load user custom keywords
-  api.storage.local.get('submitKeywords', (result) => {
-    if (result.submitKeywords && result.submitKeywords.length > 0) {
-      _submitKeywords = [...DEFAULT_SUBMIT_KEYWORDS, ...result.submitKeywords];
-    }
-  });
-
-  // Listen for keyword updates from popup
-  if (api && api.runtime && api.runtime.onMessage) api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.action === 'updateSubmitKeywords') {
-      _submitKeywords = [...DEFAULT_SUBMIT_KEYWORDS, ...(msg.keywords || [])];
-      sendResponse({ success: true });
-      return true;
-    }
-  });
-
-  function isSubmitButton(el) {
-    const tag = el.tagName;
-    if (tag !== 'BUTTON' && tag !== 'A' && tag !== 'INPUT' && tag !== 'DIV' && tag !== 'SPAN') return false;
-    const text = (el.textContent || el.value || '').trim().toLowerCase();
-    if (text.length > 20) return false;
-    return _submitKeywords.some(kw => text.includes(kw));
-  }
-
-  let _lastSubmitTime = 0;
-  document.addEventListener('click', (e) => {
-    // Check clicked element and its ancestors (up to 3 levels)
-    let target = e.target;
-    let found = false;
-    for (let i = 0; i < 4 && target && target !== document.body; i++) {
-      if (isSubmitButton(target)) { found = true; break; }
-      target = target.parentElement;
-    }
-    if (!found) return;
-
-    // Debounce: ignore rapid clicks
-    if (Date.now() - _lastSubmitTime < 5000) return;
-    _lastSubmitTime = Date.now();
-
-    // Extract page info and send to background/popup
-    const info = extractPageInfo();
-    if (!info.company && !info.job) return;
-
-    if (api && api.runtime && api.runtime.sendMessage) api.runtime.sendMessage({
-      action: 'autoRecordSubmit',
-      data: {
-        company: info.company || '未知公司',
-        job: info.job || '',
-        url: location.href,
-        date: Date.now(),
-        status: '已投递',
-        note: '',
-        _needsLLM: info._needsLLM,
-        _pageSnippet: info._pageSnippet || '',
-      }
-    });
-  }, true);
-
-  // ================================================================
-  // SECTION 15: AUTO-DETECT EXISTING APPLICATION STATUS
-  // ================================================================
-
-  const STATUS_INDICATORS = [
-    { keywords: ['已投递', '已申请', '投递成功', '申请成功', '简历已投', '已发送'], status: '已投递' },
-    { keywords: ['面试中', '已安排面试', '面试邀请', '待面试', '笔试中', '测评中', '流程中'], status: '已面试' },
-    { keywords: ['已录用', '录用通知', 'offer', '恭喜您', '已通过'], status: '已录用' },
-    { keywords: ['已拒绝', '不合适', '未通过', '已淘汰', '不匹配'], status: '已拒绝' },
-  ];
-
-  function detectExistingStatus() {
-    // Scan page for application status indicators
-    const textEls = document.querySelectorAll(
-      '[class*="status"], [class*="state"], [class*="result"], [class*="tag"], ' +
-      '[class*="badge"], [class*="tip"], [class*="notice"], [class*="alert"], ' +
-      '.delivery-status, .apply-status, .job-status'
-    );
-
-    for (const el of textEls) {
-      if (!isVisible(el)) continue;
-      const text = el.textContent.trim();
-      if (text.length > 30) continue;
-      for (const { keywords, status } of STATUS_INDICATORS) {
-        if (keywords.some(kw => text.includes(kw))) {
-          return status;
-        }
-      }
-    }
-
-    // Also check button states — disabled "已投递" button
-    const btns = document.querySelectorAll('button[disabled], a.disabled, [class*="disabled"]');
-    for (const btn of btns) {
-      const text = (btn.textContent || '').trim();
-      if (['已投递', '已申请', '已投', '已沟通'].some(kw => text.includes(kw))) {
-        return '已投递';
-      }
-    }
-
-    return null;
-  }
-
-  // On page load, auto-detect and record existing status
-  function autoDetectAndRecord() {
-    const status = detectExistingStatus();
-    if (!status) return;
-
-    const info = extractPageInfo();
-    if (!info.company && !info.job) return;
-
-    if (api && api.runtime && api.runtime.sendMessage) api.runtime.sendMessage({
-      action: 'autoRecordSubmit',
-      data: {
-        company: info.company || '未知公司',
-        job: info.job || '',
-        url: location.href,
-        date: Date.now(),
-        status: status,
-        note: '页面自动识别',
-        _needsLLM: info._needsLLM,
-        _pageSnippet: info._pageSnippet || '',
-      }
-    });
-  }
-
-  // Delay detection to let page finish rendering
-  if (document.readyState === 'complete') {
-    setTimeout(autoDetectAndRecord, 1500);
-  } else {
-    window.addEventListener('load', () => setTimeout(autoDetectAndRecord, 1500));
-  }
-
-  // ================================================================
   // DEV / EVAL HOOK — used by test/eval.html and programmatic control
   // ================================================================
   window.__RF_DEBUG__ = {
+    i18n: I18N,
+    valueForKey,
+    reformatDateValue,
+    setSelectValue,
+    matchFieldWithin,
+    fillSiblingDateSelects,
     fill: d => fillFormAsync(d),
     scan: () => scanForm(),
     adapters: () => (_activeAdapters || []).map(a => a.id),

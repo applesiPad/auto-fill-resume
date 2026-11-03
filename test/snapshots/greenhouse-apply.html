@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!-- 结构模拟:Greenhouse 申请页(非真实抓取)
+     特征:#first_name / #last_name 分开,name 形如 job_application[first_name];
+           公司自定义问题 question_xxx 不该被通用规则乱填;
+           label 是小写 "First name" -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Job Application - Greenhouse</title>
+<style>
+body{font:14px/1.7 -apple-system,"Segoe UI",sans-serif;background:#fff;margin:0;padding:24px;color:#1f2937}
+.gh-wrap{max-width:640px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+.company{color:#6b7280;font-size:13px;margin-bottom:20px}
+.gh-field{margin-bottom:14px}
+.gh-field label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.gh-field .hint{font-weight:400;color:#6b7280}
+.gh-field input,.gh-field textarea{width:100%;border:1px solid #d1d5db;border-radius:4px;padding:8px 10px;font-size:14px;box-sizing:border-box}
+.gh-field input:focus,.gh-field textarea:focus{border-color:#2563eb;outline:none}
+.gh-row{display:flex;gap:12px}
+.gh-row > *{flex:1}
+.required{color:#dc2626}
+textarea{min-height:70px;resize:vertical}
+hr{border:none;border-top:1px solid #e5e7eb;margin:20px 0}
+</style>
+</head>
+<body>
+<div class="gh-wrap">
+  <h1>Frontend Engineer</h1>
+  <div class="company">Acme Tech · Remote</div>
+
+  <form id="application_form" accept-charset="UTF-8">
+    <div class="gh-row">
+      <div class="gh-field">
+        <label for="first_name">First name <span class="required">*</span></label>
+        <input type="text" id="first_name" name="job_application[first_name]" data-mapped="true">
+      </div>
+      <div class="gh-field">
+        <label for="last_name">Last name <span class="required">*</span></label>
+        <input type="text" id="last_name" name="job_application[last_name]" data-mapped="true">
+      </div>
+    </div>
+
+    <div class="gh-field">
+      <label for="email">Email <span class="required">*</span></label>
+      <input type="email" id="email" name="job_application[email]">
+    </div>
+
+    <div class="gh-field">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="job_application[phone]">
+    </div>
+
+    <div class="gh-field">
+      <label for="job_application_location">Location (City)</label>
+      <input type="text" id="job_application_location" name="job_application[location]" placeholder="Start typing…">
+    </div>
+
+    <hr>
+
+    <div class="gh-field">
+      <label for="question_8801">Why do you want to work here? <span class="hint">(company custom question)</span></label>
+      <textarea id="question_8801" name="job_application[answers_attributes][0][text_value]"></textarea>
+    </div>
+
+    <div class="gh-field">
+      <label for="question_8802">Do you now or in the future require visa sponsorship?</label>
+      <select id="question_8802" name="job_application[answers_attributes][1][text_value]">
+        <option value="">Please select</option>
+        <option>Yes</option>
+        <option>No</option>
+      </select>
+    </div>
+  </form>
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["greenhouse"],
+  "fields": [
+    { "sel": "#first_name", "key": "firstName", "expect": "三" },
+    { "sel": "#last_name", "key": "lastName", "expect": "张" },
+    { "sel": "#email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#job_application_location", "key": "city", "expect": "北京" },
+    { "sel": "#question_8801", "key": "customQ", "expectEmpty": true },
+    { "sel": "#question_8802", "key": "customQ2", "expectEmpty": true }
+  ]
+}
+</script>
+</body>
+</html>

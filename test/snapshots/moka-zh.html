@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!-- 结构模拟:Moka 摩卡风格私企网申(非真实抓取)
+     特征:React 组件类名 moka-* / FormItem,字段有真实 <label for>;
+           中文下拉(学历 本科/硕士/博士);教育经历两条已存在 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>应聘登记表 - 某互联网公司</title>
+<style>
+body{font:13px/1.7 -apple-system,"Microsoft YaHei",sans-serif;background:#f4f5f7;margin:0;padding:20px;color:#1f2329}
+.moka-page{max-width:700px;margin:0 auto}
+.moka-card{background:#fff;border-radius:8px;padding:18px 22px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.moka-card-title{font-size:15px;font-weight:600;margin:0 0 14px;color:#1f2329}
+.moka-form-item{display:flex;align-items:flex-start;margin-bottom:12px}
+.moka-form-label{width:96px;flex-shrink:0;text-align:right;padding-right:14px;color:#646a73;line-height:32px}
+.moka-form-label.required::before{content:"*";color:#f5483b;margin-right:2px}
+.moka-form-control{flex:1}
+.moka-input,.moka-select{width:100%;max-width:320px;border:1px solid #d0d3d6;border-radius:6px;padding:6px 10px;font-size:13px;box-sizing:border-box;height:32px}
+.moka-input:focus,.moka-select:focus{border-color:#3370ff;outline:none}
+.edu-item{border:1px solid #eaebec;border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fafbfc}
+.edu-item-title{font-size:12px;color:#8f959e;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="moka-page">
+
+  <div class="moka-card" id="baseCard">
+    <h3 class="moka-card-title">基本信息</h3>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label required">姓名</div>
+      <div class="moka-form-control">
+        <input class="moka-input" type="text" id="name" name="name" placeholder="请输入真实姓名">
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label required">手机号</div>
+      <div class="moka-form-control">
+        <input class="moka-input" type="text" id="phone" name="phone" maxlength="11">
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label required">电子邮箱</div>
+      <div class="moka-form-control">
+        <input class="moka-input" type="text" id="email" name="email">
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label">政治面貌</div>
+      <div class="moka-form-control">
+        <select class="moka-select" id="political" name="politicalStatus">
+          <option value="">请选择</option>
+          <option>中共党员</option>
+          <option>中共预备党员</option>
+          <option>共青团员</option>
+          <option>群众</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label">民族</div>
+      <div class="moka-form-control">
+        <input class="moka-input" type="text" id="ethnicity" name="ethnicity">
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label">婚姻状况</div>
+      <div class="moka-form-control">
+        <select class="moka-select" id="marital" name="maritalStatus">
+          <option value="">请选择</option>
+          <option>未婚</option>
+          <option>已婚</option>
+          <option>离异</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="moka-form-item">
+      <div class="moka-form-label">期望职位</div>
+      <div class="moka-form-control">
+        <input class="moka-input" type="text" id="expectJob" name="expectJob">
+      </div>
+    </div>
+  </div>
+
+  <div class="moka-card" id="eduCard">
+    <h3 class="moka-card-title">教育经历</h3>
+
+    <div class="edu-item" id="edu1">
+      <div class="edu-item-title">教育经历 1</div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">学校名称</div>
+        <div class="moka-form-control"><input class="moka-input edu-school" type="text" id="edu1-school"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">专业</div>
+        <div class="moka-form-control"><input class="moka-input edu-major" type="text" id="edu1-major"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">学历</div>
+        <div class="moka-form-control">
+          <select class="moka-select edu-degree" id="edu1-degree">
+            <option value="">请选择</option>
+            <option>博士</option><option>硕士</option><option>本科</option><option>大专</option><option>高中</option>
+          </select>
+        </div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">入学时间</div>
+        <div class="moka-form-control"><input class="moka-input edu-start" type="text" id="edu1-start" placeholder="如 2019-09"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">毕业时间</div>
+        <div class="moka-form-control"><input class="moka-input edu-end" type="text" id="edu1-end" placeholder="如 2023-06"></div>
+      </div>
+    </div>
+
+    <div class="edu-item" id="edu2">
+      <div class="edu-item-title">教育经历 2</div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">学校名称</div>
+        <div class="moka-form-control"><input class="moka-input edu-school" type="text" id="edu2-school"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">专业</div>
+        <div class="moka-form-control"><input class="moka-input edu-major" type="text" id="edu2-major"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">学历</div>
+        <div class="moka-form-control">
+          <select class="moka-select edu-degree" id="edu2-degree">
+            <option value="">请选择</option>
+            <option>博士</option><option>硕士</option><option>本科</option><option>大专</option><option>高中</option>
+          </select>
+        </div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">入学时间</div>
+        <div class="moka-form-control"><input class="moka-input edu-start" type="text" id="edu2-start"></div>
+      </div>
+      <div class="moka-form-item">
+        <div class="moka-form-label">毕业时间</div>
+        <div class="moka-form-control"><input class="moka-input edu-end" type="text" id="edu2-end"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["moka"],
+  "fields": [
+    { "sel": "#name", "key": "name", "expect": "张三" },
+    { "sel": "#phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#political", "key": "politicalStatus", "expect": "中共党员" },
+    { "sel": "#ethnicity", "key": "ethnicity", "expect": "汉族" },
+    { "sel": "#marital", "key": "maritalStatus", "expect": "未婚" },
+    { "sel": "#expectJob", "key": "expectedJob", "expect": "前端开发工程师" },
+    { "sel": "#edu1-school", "key": "edu1School", "expect": "清华大学" },
+    { "sel": "#edu1-major", "key": "edu1Major", "expect": "计算机科学与技术" },
+    { "sel": "#edu1-degree", "key": "edu1Degree", "expect": "本科" },
+    { "sel": "#edu2-school", "key": "edu2School", "expect": "北京四中" },
+    { "sel": "#edu2-degree", "key": "edu2Degree", "expect": "高中" }
+  ]
+}
+</script>
+</body>
+</html>

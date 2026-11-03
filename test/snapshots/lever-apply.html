@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- 结构模拟:Lever 申请页(非真实抓取)
+     特征:极简表单,input[name="name"] 是整名(不是 First/Last);
+           urls[LinkedIn] 这类数组式 name; "Current company" 是关键坑 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Frontend Engineer - Lever</title>
+<style>
+body{font:14px/1.7 -apple-system,"Segoe UI",sans-serif;margin:0;padding:28px;color:#333;background:#fbfaf9}
+.lv-wrap{max-width:600px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}
+.posting-categories{color:#7c7c7c;font-size:13px;margin-bottom:22px}
+.application-question{margin-bottom:16px}
+.application-label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#3d3d3d}
+.application-label .required{color:#d0021b}
+.application-question input[type=text],.application-question input[type=email],
+.application-question input[type=tel],.application-question textarea{width:100%;border:1px solid #dcdcdc;border-radius:4px;padding:9px 10px;font-size:14px;box-sizing:border-box;background:#fff}
+.application-question textarea{min-height:80px}
+</style>
+</head>
+<body>
+<div class="lv-wrap">
+  <h1>Frontend Engineer</h1>
+  <div class="posting-categories">Acme Tech · Shanghai · Full-time</div>
+
+  <form id="application-form" class="application-form" method="post">
+    <div class="application-question field">
+      <label class="application-label" for="lv-name">Full name<span class="required">✱</span></label>
+      <input type="text" id="lv-name" name="name" required>
+    </div>
+
+    <div class="application-question field">
+      <label class="application-label" for="lv-email">Email<span class="required">✱</span></label>
+      <input type="email" id="lv-email" name="email" required>
+    </div>
+
+    <div class="application-question field">
+      <label class="application-label" for="lv-phone">Phone</label>
+      <input type="tel" id="lv-phone" name="phone">
+    </div>
+
+    <div class="application-question field">
+      <label class="application-label" for="lv-org">Current company</label>
+      <input type="text" id="lv-org" name="org">
+    </div>
+
+    <div class="application-question field">
+      <label class="application-label" for="lv-linkedin">LinkedIn URL</label>
+      <input type="text" id="lv-linkedin" name="urls[LinkedIn]">
+    </div>
+
+    <div class="application-question field">
+      <label class="application-label" for="lv-comments">Additional information</label>
+      <textarea id="lv-comments" name="comments"></textarea>
+    </div>
+  </form>
+</div>
+
+<script type="application/json" id="__rf_expected">
+{
+  "adapters": ["lever"],
+  "fields": [
+    { "sel": "#lv-name", "key": "name", "expect": "张三" },
+    { "sel": "#lv-email", "key": "email", "expect": "zhangsan@mail.com" },
+    { "sel": "#lv-phone", "key": "phone", "expect": "13800138000" },
+    { "sel": "#lv-org", "key": "company", "expect": "字节跳动" },
+    { "sel": "#lv-linkedin", "key": "linkedin", "expectEmpty": true },
+    { "sel": "#lv-comments", "key": "comments", "expectEmpty": true }
+  ]
+}
+</script>
+</body>
+</html>
