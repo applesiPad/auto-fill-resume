@@ -37,7 +37,7 @@ Chrome / Edge 浏览器插件，一键将个人简历信息智能填入求职网
 ### 1. 下载代码
 
 ```bash
-git clone https://github.com/erdayi/auto-fill-resume.git
+git clone https://github.com/applesiPad/auto-fill-resume.git
 ```
 
 ### 2. 加载插件
