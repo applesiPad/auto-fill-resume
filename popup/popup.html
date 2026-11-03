@@ -24,7 +24,7 @@
         </svg>
         <div class="logo-text">
           <h1>简历自动填写</h1>
-          <span class="version">v1.7.0</span>
+          <span class="version">v1.9.0</span>
         </div>
       </div>
       <div class="header-actions">
@@ -67,6 +67,7 @@
       <button class="tab" data-tab="work"><span>工作</span></button>
       <button class="tab" data-tab="project"><span>项目</span></button>
       <button class="tab" data-tab="other"><span>更多</span></button>
+      <button class="tab" data-tab="records"><span>投递记录</span></button>
     </nav>
 
     <!-- Form Sections -->
@@ -353,6 +354,35 @@
           </div>
         </div>
       </details>
+
+      <!-- RECORDS: Application tracking -->
+      <div class="tab-content" id="tab-records">
+        <div class="records-header">
+          <div class="records-title">投递记录</div>
+          <div class="records-actions">
+            <button id="btnExportRecords" class="btn btn-outline btn-xs" title="导出投递记录">导出</button>
+            <button id="btnImportRecords" class="btn btn-outline btn-xs" title="导入投递记录">导入</button>
+            <button id="btnClearRecords" class="btn btn-outline btn-xs danger" title="清空所有记录">清空</button>
+          </div>
+        </div>
+        <div class="records-filter">
+          <select id="recordsFilter">
+            <option value="all">全部状态</option>
+            <option value="applied">已投递</option>
+            <option value="pending">待处理</option>
+            <option value="interview">面试中</option>
+            <option value="offer">已录用</option>
+            <option value="rejected">已拒绝</option>
+          </select>
+          <input type="text" id="recordsSearch" placeholder="搜索公司/职位..." class="records-search">
+        </div>
+        <div id="recordsList" class="records-list"></div>
+        <div id="recordsEmpty" class="records-empty">
+          <p>暂无投递记录</p>
+          <p class="hint">填写求职表单后会自动记录</p>
+        </div>
+        <input type="file" id="importRecordsFile" accept=".json" style="display:none">
+      </div>
 
     </div>
 

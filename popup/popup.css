@@ -585,6 +585,141 @@ body {
 .compare-count { font-weight: 500; color: var(--primary); font-size: 10px; }
 .compare-entry { font-size: 10px; color: var(--text-2); padding: 3px 0; border-top: 1px solid var(--border-light); }
 
+/* --- Application Records --- */
+.records-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.records-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+}
+.records-actions {
+  display: flex; gap: 6px;
+}
+.records-filter {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.records-filter select {
+  flex: 0 0 100px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  background: var(--surface);
+}
+.records-search {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  background: var(--surface);
+}
+.records-search:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.records-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.record-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: all var(--transition);
+}
+.record-item:hover {
+  box-shadow: var(--shadow-xs);
+  border-color: var(--primary-border);
+}
+.record-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.record-company {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.record-status {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 8px; border-radius: 99px;
+  color: #fff; flex-shrink: 0;
+  margin-left: 8px;
+}
+.record-job {
+  font-size: 11px; color: var(--text-2);
+  margin-bottom: 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.record-meta {
+  display: flex; gap: 12px;
+  font-size: 10px; color: var(--text-3);
+  margin-bottom: 6px;
+}
+.record-note {
+  font-size: 10px; color: var(--text-2);
+  background: var(--bg);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+.record-actions {
+  display: flex; gap: 6px; align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-light);
+}
+.record-status-select {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.record-status-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.record-note-btn,
+.record-delete-btn {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.record-note-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+}
+.record-delete-btn {
+  color: var(--danger);
+}
+.record-delete-btn:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+.records-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-3);
+}
+.records-empty p {
+  margin: 4px 0;
+  font-size: 12px;
+}
+.records-empty .hint {
+  font-size: 10px;
+  color: var(--text-3);
+}
+
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }

@@ -36,7 +36,73 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     llmDraftAnswer(msg).then(r => sendResponse(r)).catch(() => sendResponse({ answer: '' }));
     return true;
   }
+  // Application tracking
+  if (msg.action === 'recordApplication') {
+    recordApplication(msg.data).then(() => sendResponse({ success: true })).catch(() => sendResponse({ success: false }));
+    return true;
+  }
+  if (msg.action === 'getApplications') {
+    getApplications().then(list => sendResponse({ list })).catch(() => sendResponse({ list: [] }));
+    return true;
+  }
+  if (msg.action === 'updateApplication') {
+    updateApplication(msg.data).then(() => sendResponse({ success: true })).catch(() => sendResponse({ success: false }));
+    return true;
+  }
+  if (msg.action === 'deleteApplication') {
+    deleteApplication(msg.id).then(() => sendResponse({ success: true })).catch(() => sendResponse({ success: false }));
+    return true;
+  }
 });
+
+// ============ Application Tracking ============
+const APP_RECORDS_KEY = 'rfApplications';
+const APP_RECORDS_MAX = 200;
+
+async function getApplications() {
+  const r = await api.storage.local.get(APP_RECORDS_KEY);
+  return (r && r[APP_RECORDS_KEY]) || [];
+}
+
+async function recordApplication(data) {
+  if (!data || !data.host) return;
+  const list = await getApplications();
+  // Check if same URL exists, update it
+  const existing = list.find(r => r.url === data.url);
+  if (existing) {
+    Object.assign(existing, data, { updatedAt: Date.now() });
+  } else {
+    // Add new record at the beginning
+    list.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      ...data,
+      status: 'applied', // applied, pending, interview, offer, rejected
+      note: '',
+      createdAt: Date.now()
+    });
+    // Limit size
+    if (list.length > APP_RECORDS_MAX) {
+      list.length = APP_RECORDS_MAX;
+    }
+  }
+  await api.storage.local.set({ [APP_RECORDS_KEY]: list });
+}
+
+async function updateApplication(data) {
+  if (!data || !data.id) return;
+  const list = await getApplications();
+  const idx = list.findIndex(r => r.id === data.id);
+  if (idx >= 0) {
+    Object.assign(list[idx], data, { updatedAt: Date.now() });
+    await api.storage.local.set({ [APP_RECORDS_KEY]: list });
+  }
+}
+
+async function deleteApplication(id) {
+  const list = await getApplications();
+  const filtered = list.filter(r => r.id !== id);
+  await api.storage.local.set({ [APP_RECORDS_KEY]: filtered });
+}
 // ============ L2: Semantic field mapping via LLM ============
 // Content script serializes unmatched form fields (labels/options only —
 // never user values); we map them onto the closed set of profile keys and

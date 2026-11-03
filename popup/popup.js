@@ -1175,3 +1175,207 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   reader.readAsText(file);
   e.target.value = '';
 });
+
+// ============ Application Records ============
+const STATUS_LABELS = {
+  applied: '已投递',
+  pending: '待处理',
+  interview: '面试中',
+  offer: '已录用',
+  rejected: '已拒绝'
+};
+
+const STATUS_COLORS = {
+  applied: '#2196f3',
+  pending: '#ff9800',
+  interview: '#9c27b0',
+  offer: '#4caf50',
+  rejected: '#f44336'
+};
+
+let currentRecords = [];
+let recordsFilter = 'all';
+let recordsSearch = '';
+
+function loadRecords() {
+  api.runtime.sendMessage({ action: 'getApplications' }, (response) => {
+    if (response && response.list) {
+      currentRecords = response.list;
+      renderRecords();
+    }
+  });
+}
+
+function renderRecords() {
+  const listEl = document.getElementById('recordsList');
+  const emptyEl = document.getElementById('recordsEmpty');
+
+  // Filter records
+  let filtered = currentRecords;
+  if (recordsFilter !== 'all') {
+    filtered = filtered.filter(r => r.status === recordsFilter);
+  }
+  if (recordsSearch) {
+    const q = recordsSearch.toLowerCase();
+    filtered = filtered.filter(r =>
+      (r.company && r.company.toLowerCase().includes(q)) ||
+      (r.job && r.job.toLowerCase().includes(q)) ||
+      (r.host && r.host.toLowerCase().includes(q))
+    );
+  }
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = filtered.map(r => {
+    const date = new Date(r.filledAt || r.createdAt).toLocaleDateString('zh-CN');
+    const status = r.status || 'applied';
+    const statusLabel = STATUS_LABELS[status] || '已投递';
+    const statusColor = STATUS_COLORS[status] || '#2196f3';
+    return `
+      <div class="record-item" data-id="${r.id}">
+        <div class="record-header">
+          <span class="record-company">${esc(r.company || r.host || '未知公司')}</span>
+          <span class="record-status" style="background:${statusColor}">${statusLabel}</span>
+        </div>
+        <div class="record-job">${esc(r.job || '未知职位')}</div>
+        <div class="record-meta">
+          <span class="record-date">${date}</span>
+          <span class="record-host">${esc(r.host || '')}</span>
+        </div>
+        ${r.note ? `<div class="record-note">${esc(r.note)}</div>` : ''}
+        <div class="record-actions">
+          <select class="record-status-select" data-id="${r.id}">
+            ${Object.entries(STATUS_LABELS).map(([k, v]) => `<option value="${k}" ${k === status ? 'selected' : ''}>${v}</option>`).join('')}
+          </select>
+          <button class="record-note-btn" data-id="${r.id}" title="添加备注">📝</button>
+          <button class="record-delete-btn" data-id="${r.id}" title="删除">×</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Bind events
+  listEl.querySelectorAll('.record-status-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      const status = e.target.value;
+      api.runtime.sendMessage({ action: 'updateApplication', data: { id, status } }, () => {
+        loadRecords();
+        showToast('状态已更新');
+      });
+    });
+  });
+
+  listEl.querySelectorAll('.record-note-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const record = currentRecords.find(r => r.id === id);
+      const note = prompt('添加备注：', record?.note || '');
+      if (note !== null) {
+        api.runtime.sendMessage({ action: 'updateApplication', data: { id, note } }, () => {
+          loadRecords();
+          showToast('备注已保存');
+        });
+      }
+    });
+  });
+
+  listEl.querySelectorAll('.record-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (confirm('确定删除这条记录？')) {
+        api.runtime.sendMessage({ action: 'deleteApplication', id }, () => {
+          loadRecords();
+          showToast('记录已删除');
+        });
+      }
+    });
+  });
+}
+
+// Filter and search
+document.getElementById('recordsFilter').addEventListener('change', (e) => {
+  recordsFilter = e.target.value;
+  renderRecords();
+});
+
+document.getElementById('recordsSearch').addEventListener('input', (e) => {
+  recordsSearch = e.target.value;
+  renderRecords();
+});
+
+// Export records
+document.getElementById('btnExportRecords').addEventListener('click', () => {
+  if (currentRecords.length === 0) {
+    showToast('暂无记录可导出');
+    return;
+  }
+  const data = JSON.stringify(currentRecords, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `投递记录_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('记录已导出');
+});
+
+// Import records
+document.getElementById('btnImportRecords').addEventListener('click', () => {
+  document.getElementById('importRecordsFile').click();
+});
+
+document.getElementById('importRecordsFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const records = JSON.parse(ev.target.result);
+      if (!Array.isArray(records)) throw new Error('格式错误');
+      // Import each record
+      let imported = 0;
+      records.forEach(r => {
+        if (r.host || r.url) {
+          api.runtime.sendMessage({ action: 'recordApplication', data: r }, () => {
+            imported++;
+            if (imported === records.length) {
+              loadRecords();
+              showToast(`已导入 ${imported} 条记录`);
+            }
+          });
+        }
+      });
+    } catch {
+      showToast('导入失败：格式不正确', 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// Clear all records
+document.getElementById('btnClearRecords').addEventListener('click', () => {
+  if (confirm('确定清空所有投递记录？此操作不可恢复。')) {
+    // Delete each record
+    currentRecords.forEach(r => {
+      api.runtime.sendMessage({ action: 'deleteApplication', id: r.id });
+    });
+    setTimeout(() => {
+      loadRecords();
+      showToast('记录已清空');
+    }, 500);
+  }
+});
+
+// Load records when records tab is activated
+document.querySelector('[data-tab="records"]').addEventListener('click', loadRecords);
+
+// Initial load
+loadRecords();

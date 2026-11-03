@@ -1283,6 +1283,99 @@
   }
 
   // ================================================================
+  // PAGE INFO EXTRACTION — auto-detect company/job for application tracking
+  // ================================================================
+
+  function extractPageInfo() {
+    const info = { url: location.href, host: location.host, title: document.title };
+
+    // 1. Try JSON-LD structured data
+    const ldScripts = document.querySelectorAll('script[type="application/ld+json"]');
+    for (const s of ldScripts) {
+      try {
+        const data = JSON.parse(s.textContent);
+        const items = Array.isArray(data) ? data : [data];
+        for (const item of items) {
+          if (item['@type'] === 'JobPosting') {
+            info.job = item.title || item.name || '';
+            info.company = item.hiringOrganization?.name || '';
+            info.location = item.jobLocation?.address?.addressLocality || '';
+            break;
+          }
+        }
+        if (info.job) break;
+      } catch (e) {}
+    }
+
+    // 2. Try meta tags
+    if (!info.job) {
+      const metaJob = document.querySelector('meta[property="job:title"], meta[name="job:title"]');
+      if (metaJob) info.job = metaJob.content;
+    }
+    if (!info.company) {
+      const metaOrg = document.querySelector('meta[property="og:site_name"], meta[name="company"]');
+      if (metaOrg) info.company = metaOrg.content;
+    }
+
+    // 3. Try common DOM patterns
+    if (!info.job) {
+      // Look for job title in h1/h2 or specific class patterns
+      const candidates = document.querySelectorAll('h1, h2, [class*="job-title" i], [class*="position" i], [class*="recruit" i]');
+      for (const el of candidates) {
+        const text = el.textContent.trim();
+        if (text.length > 2 && text.length < 100 && /工程师|经理|专员|助理|开发|设计|测试|运营|产品|分析|实习|校招|应届|社招/i.test(text)) {
+          info.job = text;
+          break;
+        }
+      }
+    }
+    if (!info.company) {
+      const candidates = document.querySelectorAll('[class*="company" i], [class*="corp" i], [class*="org" i], [class*="employer" i]');
+      for (const el of candidates) {
+        const text = el.textContent.trim();
+        if (text.length > 2 && text.length < 100) {
+          info.company = text;
+          break;
+        }
+      }
+    }
+
+    // 4. Fallback: extract from page title
+    if (!info.company && info.title) {
+      // Common patterns: "公司名 - 职位名" or "职位名 - 公司名"
+      const parts = info.title.split(/[-|—_]/).map(s => s.trim()).filter(s => s.length > 1);
+      if (parts.length >= 2) {
+        // Heuristic: shorter part is usually company, longer is job (or vice versa for Chinese)
+        if (parts[0].length < parts[1].length && parts[0].length < 30) {
+          info.company = info.company || parts[0];
+        } else if (parts[1].length < 30) {
+          info.company = info.company || parts[1];
+        }
+      }
+    }
+
+    return info;
+  }
+
+  // Send application record to background after fill
+  function sendApplicationRecord(data) {
+    if (!api || !api.runtime) return;
+    const pageInfo = extractPageInfo();
+    api.runtime.sendMessage({
+      action: 'recordApplication',
+      data: {
+        url: pageInfo.url,
+        host: pageInfo.host,
+        company: pageInfo.company || '',
+        job: pageInfo.job || '',
+        location: pageInfo.location || '',
+        filledAt: Date.now(),
+        filledFields: data ? Object.keys(data).filter(k => data[k]).length : 0
+      }
+    }).catch(() => {});
+  }
+
+  // ================================================================
   // MESSAGE LISTENER
   // ================================================================
 
@@ -1291,6 +1384,8 @@
       (async () => {
         try {
           const count = await fillFormAsync(msg.data);
+          // Record application after successful fill
+          if (count > 0) sendApplicationRecord(msg.data);
           // Start auto-fill for subsequent steps
           startAutoFill(msg.data);
           sendResponse({ success: count > 0, filledCount: count });
